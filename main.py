@@ -9,15 +9,16 @@ import numpy as np
 
 def get_pd(filename):
     d = pd.read_csv(filename, index_col=False, on_bad_lines='skip')
-    # d = d.dropna()
-    # d.drop_duplicates(inplace=True, keep=False)
     d = d.drop_duplicates(subset=['url'])
     return d
 
 def get_url_content(link):
-    r = requests.get(link)
-    html_text = r.text
-    return html_text
+    try:
+        r = requests.get(link, timeout=5)
+        html_text = r.text
+        return html_text
+    except requests.exceptions.Timeout:
+      print( "Timeout occurred")
 
 def n_gram_count(content, word):
     return len(re.findall(word, content))
@@ -61,7 +62,9 @@ def clear_file():
 
 def add_n_gram(url):
     con = get_url_content(url)
-    n = n_gram_count(con, 'Ronaldo')
+    if con == None:
+        return (url, 0)
+    n = n_gram_count(con, 'Barca')
     # with open("all_url2.csv", 'r+') as f :
     #     f.readlines()
     #     f.write(url+','+str(n)+"\n")
@@ -73,16 +76,17 @@ if __name__ == "__main__":
     # print(get_url_content(link[0]))
     # treads = []
     # word = 'Arsenal'
-    clear_file()
-    with concurrent.futures.ThreadPoolExecutor(1000) as executor :
-        executor.map(get_all_links, link)
+    # clear_file()
+    # with concurrent.futures.ThreadPoolExecutor(1000) as executor :
+        # executor.map(get_all_links, link)
 
     d = get_pd("all_url.csv")
+    print(len(d))
     with open("all_url2.csv", 'w') as f :
         f.write('url,n_gram\n')
     with concurrent.futures.ThreadPoolExecutor(1000) as executor :
         # results = executor.map(add_n_gram, d['url'].values.tolist())
-        results = [executor.submit(add_n_gram, i) for i in d['url'].values.tolist()]
+        results = ( executor.submit(add_n_gram, i) for i in d['url'].values.tolist() )
         for result in as_completed(results):
             url, n = result.result()
             with open("all_url2.csv", 'r+') as f :

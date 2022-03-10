@@ -1,4 +1,5 @@
 from asyncio import as_completed
+import time
 from urllib.request import urlopen
 import re
 import requests
@@ -8,23 +9,20 @@ from concurrent.futures import as_completed
 import numpy as np
 from urllib.parse import unquote, urlparse
 from copy import deepcopy
+from collections import Counter
 
 def get_pd(filename):
     d = pd.read_csv(filename, index_col=False, on_bad_lines='skip')
     d = d.drop_duplicates(subset=['url'])
-    return d
+    return d['url'].values
 
 def get_url_content(link):
     try:
-        r = requests.get(link, timeout=5)
+        r = requests.get(link, timeout=3)
         r.encoding = 'utf-8'
         html_text = r.text
         return html_text
-        # html = urlopen(link)
-        # content = html.read().decode('utf-8')
-        # return content
     except :
-        # print(f"Timeout occurred : {link}")
         pass
 
 def filter_links(base_url, links):
@@ -68,7 +66,8 @@ def filter_links(base_url, links):
         return links
 
 def n_gram_count(content, word):
-    return len(re.findall(word, content))
+    return content.count(word)
+    # return len(re.findall(word, content))
 
 def get_url_links(url, content):
     if not content: return []
@@ -105,41 +104,50 @@ def get_all_links(url):
     l = filter_links(url, l)
     write_url(l.copy())
     print(url,"success")
+    return deepcopy(l)
 
-def clear_file():
-    with open("all_url.csv", 'w', encoding='utf8') as f :
-        f.write('url\n')
-    with open("all_url2.csv", 'w', encoding='utf8') as f :
-        f.write('url,n_gram\n')
-
-def add_n_gram(url):
+def add_n_gram(url, word):
     con = get_url_content(url)
     if con == None:
         return (url, 0)
-    n = n_gram_count(con, 'Mbappe')
+    n = n_gram_count(con, word)
     return (url, n)
+
+def get_links_multithread():
+    links = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international", "https://www.soccersuck.com", 
+    "https://www.bbc.com/sport/football", "https://www.dailymail.co.uk/sport/football", "https://edition.cnn.com/sport/football"]
+    with open("all_url.csv", 'w', encoding="utf-8") as f :
+        f.write("url\n")
+    all_links = []
+    with concurrent.futures.ThreadPoolExecutor(1000) as executor :
+        results = (executor.submit(get_all_links, link) for link in links)
+        for result in as_completed(results):
+            all_links += result.result()
+    print("before :", len(all_links))
+    fil_links = pd.Series(all_links)
+    fil_links.drop_duplicates(inplace=True)
+    return fil_links.values
+
+def get_n_gram_multithread(all_links=[]):
+    if len(all_links) == 0:
+        all_links = get_pd('all_url2.csv')
+    data = pd.DataFrame({'url':[], 'n_gram':[]})
+    with concurrent.futures.ThreadPoolExecutor(2000) as executor :
+        results = ( executor.submit(lambda url: add_n_gram(url, 'Ronaldo'), i) for i in all_links)
+        for result in as_completed(results):
+            url, n = result.result()
+            data.loc[len(data.index)] = [url, n]
+    data = data.sort_values(by=['n_gram'], ascending=False)
+    return data
+
 
 if __name__ == "__main__":
     pd.options.display.max_colwidth = 600
-    # link = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international", "https://www.soccersuck.com", 
-    # "https://www.bbc.com/sport/football", "https://www.dailymail.co.uk/sport/football", "https://edition.cnn.com/sport/football"]
-    # clear_file()
-    # with concurrent.futures.ThreadPoolExecutor(1000) as executor :
-    #     executor.map(get_all_links, link)
 
-    d = get_pd("all_url.csv")
-    print(len(d))
-    with open("all_url2.csv", 'w', encoding="utf8") as f :
-        f.write('url,n_gram\n')
-    with concurrent.futures.ThreadPoolExecutor(2000) as executor :
-        results = ( executor.submit(add_n_gram, i) for i in d['url'].values.tolist() )
-        for result in as_completed(results):
-            url, n = result.result()
-            with open("all_url2.csv", 'r+', encoding="utf8") as f :
-                f.readlines()
-                f.write(url+','+str(n)+"\n")
-
-
-    d = get_pd("all_url2.csv")
-    a = d.sort_values(by=['n_gram'], ascending=False)
-    print(a[:20])
+    start = time.time()
+    all_links = get_links_multithread()
+    print("links: ", len(all_links))
+    print('request copleted: ', time.time()-start)
+    data = get_n_gram_multithread()
+    print(data[:20])
+    print('total: ', time.time()-start)

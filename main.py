@@ -45,6 +45,25 @@ def filter_links(base_url, links):
         r = re.compile(r"https:\/\/www\.siamsport\.co\.th\/football\/.*\/view\/.*")
         fil_links = list(filter(r.match, links)) # Read Note
         return fil_links.copy()
+    elif base_url == "https://www.soccersuck.com":
+        r = re.compile(r"https:\/\/www\.soccersuck\.com\/boards\/topic\/.*")
+        fil_links = list(filter(r.match, links)) # Read Note
+        return fil_links.copy()
+    elif base_url == "https://www.bbc.com/sport/football":
+        r = re.compile(r"https:\/\/www\.bbc\..*\/sport\/football\/\d+")
+        fil_links = list(filter(r.match, links)) # Read Note
+        return fil_links.copy()
+    elif base_url == "https://www.dailymail.co.uk/sport/football":
+        r = re.compile(r'((https\:\/\/www\.dailymail\..*\/sport\/football\/article-\d+\/.*\.html)(?!#))')
+        fil_links = list(filter(r.match, links)) # Read Note
+        return fil_links.copy()
+    elif base_url == "https://edition.cnn.com/sport/football":
+        url_parse = urlparse(base_url)
+        raw_url = url_parse.scheme + "://" + url_parse.netloc
+        links = [raw_url+i if (i[0] == '/') else i for i in links]
+        r = re.compile(r'https\:\/\/edition\.cnn\.com\/\d{4}\/\d{2}\/\d{2}\/football\/.*')
+        fil_links = list(filter(r.match, links)) # Read Note
+        return fil_links.copy()
     else:
         return links
 
@@ -97,22 +116,22 @@ def add_n_gram(url):
     con = get_url_content(url)
     if con == None:
         return (url, 0)
-    n = n_gram_count(con, 'ลิเวอร์พูล')
+    n = n_gram_count(con, 'Mbappe')
     return (url, n)
 
 if __name__ == "__main__":
     pd.options.display.max_colwidth = 600
-    link = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international"]
-    clear_file()
-    with concurrent.futures.ThreadPoolExecutor(1000) as executor :
-        executor.map(get_all_links, link)
+    # link = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international", "https://www.soccersuck.com", 
+    # "https://www.bbc.com/sport/football", "https://www.dailymail.co.uk/sport/football", "https://edition.cnn.com/sport/football"]
+    # clear_file()
+    # with concurrent.futures.ThreadPoolExecutor(1000) as executor :
+    #     executor.map(get_all_links, link)
 
     d = get_pd("all_url.csv")
     print(len(d))
     with open("all_url2.csv", 'w', encoding="utf8") as f :
         f.write('url,n_gram\n')
-    with concurrent.futures.ThreadPoolExecutor(1000) as executor :
-        # results = executor.map(add_n_gram, d['url'].values.tolist())
+    with concurrent.futures.ThreadPoolExecutor(2000) as executor :
         results = ( executor.submit(add_n_gram, i) for i in d['url'].values.tolist() )
         for result in as_completed(results):
             url, n = result.result()

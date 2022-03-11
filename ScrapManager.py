@@ -25,7 +25,7 @@ class ScrapManager:
             return
         self.links = self.read_cached()
     
-    def get_all_scrap(self, links=None):
+    def get_all_data(self, links=None):
         self.load_links(links)
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor:
             results = (executor.submit(self.get_data, url) for url in self.links)
@@ -57,6 +57,6 @@ class ScrapManager:
 
 if __name__ == "__main__":
     manager = ScrapManager()
-    data = manager.get_all_scrap()
+    data = manager.get_all_data()
     manager.save_data()
     print(data[:20])

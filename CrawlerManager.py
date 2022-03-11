@@ -41,7 +41,7 @@ class CrawlerManager():
         self.save_links()
         return self.all_links.copy()
 
-    def get_n_gram_multithread(self, word):
+    def get_n_gram_data(self, word):
         if len(self.all_links) == 0:
             self.all_links = self.read_cached()
             return self.all_links
@@ -112,5 +112,5 @@ if __name__ == "__main__":
     manager = CrawlerManager()
     data = time_spent(manager.get_all_links)
     print(len(data))
-    data2 = time_spent(manager.get_n_gram_multithread, "เมสซี")
+    data2 = time_spent(manager.get_n_gram_data, "เมสซี")
     print(data2[:20])

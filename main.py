@@ -1,4 +1,3 @@
-from asyncio import as_completed
 import time
 from urllib.request import urlopen
 import re
@@ -79,7 +78,7 @@ def get_url_links(url, content):
     return deepcopy(result)
 
 def write_url(l):
-    with open("all_url.csv", 'r+', encoding="utf-8-sig") as f :
+    with open("all_url.csv", 'r+', encoding="utf-8") as f :
         f.readlines()
         l = [i.strip()+"\n" for i in l]
         f.writelines(l)

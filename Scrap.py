@@ -13,7 +13,7 @@ class Scrap:
         bs = BeautifulSoup(res.text, 'html.parser')
         head = self.head_scrapping(bs)
         content = self.content_scrapping(bs)
-        return (head, content)
+        return (self.url, head, content)
 
     def head_scrapping(self, bs):
         text = bs.find(*self.head).get_text()

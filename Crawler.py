@@ -6,6 +6,7 @@ from concurrent.futures import as_completed
 from urllib.parse import unquote, urlparse
 from copy import deepcopy
 from time import time
+import numpy as np
 
 class Crawler:
     def __init__(self):
@@ -57,6 +58,7 @@ class Crawler:
         return sub.copy()
 
     def get_all_links(self):
+        start = time()
         url = self.url
         self._before_filter_links = []
         sub_l = self.get_sublink(url)
@@ -65,6 +67,7 @@ class Crawler:
             sub_l = self.get_sublink(url)
             count -= 1
         self._before_filter_links += sub_l.copy()
+        self._before_filter_links = pd.Series(self._before_filter_links).drop_duplicates()
         if self.no_domain:
             url_parse = urlparse(url)
             raw_url = url_parse.scheme + "://" + url_parse.netloc
@@ -72,11 +75,11 @@ class Crawler:
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
             results = [executor.submit(self.get_sublink, i) for i in self._before_filter_links[1:]]
             for result in as_completed(results):
-                self._before_filter_links += result.result()
+                self._before_filter_links = np.append(self._before_filter_links, result.result())
         self._before_filter_links = self.filter_links()
         self.links = pd.DataFrame({'url':self._before_filter_links})
         self.links.drop_duplicates(subset=['url'], inplace=True)
-        print(url, "success")
+        print(url, "success", time()-start)
         return self.links['url'].values
 
     def add_n_gram(self, url):

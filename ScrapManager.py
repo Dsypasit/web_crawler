@@ -8,7 +8,7 @@ class ScrapManager:
     def __init__(self):
         self.links = None
         self.file = "all_url.csv"
-        self.data = pd.DataFrame({'header':[], 'content':[]}, dtype='str')
+        self.data = pd.DataFrame({'url':[], 'header':[], 'content':[]}, dtype='str')
         self.worker = 1000
 
     def read_cached(self):

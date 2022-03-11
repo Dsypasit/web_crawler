@@ -4,14 +4,15 @@ from concurrent.futures import as_completed
 import pandas as pd
 import numpy as np
 import requests
+import re
 pd.options.display.max_colwidth = 600
 
 class CrawlerManager():
     def __init__(self):
         self.worker = 1000
-        self.links = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international", "https://www.soccersuck.com", 
+        self.links = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international", 
         "https://www.bbc.com/sport/football", "https://www.dailymail.co.uk/sport/football", "https://edition.cnn.com/sport/football"]
-        self.all_links = None
+        self.all_links = []
         self.data = pd.DataFrame({'url':[], 'n_gram':[]})
         self.file = "all_url.csv"
 
@@ -44,10 +45,10 @@ class CrawlerManager():
     def get_n_gram_data(self, word):
         if len(self.all_links) == 0:
             self.all_links = self.read_cached()
-            return self.all_links
         if word == "":
             return None
         self.word = word
+        self.data = pd.DataFrame({'url':[], 'n_gram':[]})
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
             results = ( executor.submit(self.count_url_ngram, i) for i in self.all_links)
             for result in as_completed(results):
@@ -66,7 +67,11 @@ class CrawlerManager():
             pass
 
     def n_gram_count(self, content):
-        return content.count(self.word)
+        reg = re.compile(r'[a-zA-Z]')
+        if reg.match(self.word):
+            return content.count(self.word)
+        else:
+            return len(re.findall(self.word, content))
 
     def count_url_ngram(self, url):
         con = self.get_url_content(url)

@@ -36,7 +36,6 @@ class Crawler:
             raw_url = url_parse.scheme + "://" + url_parse.netloc
             self._before_filter_links = [raw_url+i if (i[0] == '/') else i for i in self._before_filter_links]    # concate url and /abc/def (route)
         fil_links = list(filter(self.regex.match, self._before_filter_links))
-        self.links = pd.DataFrame({'url':fil_links})
         return fil_links.copy()
 
     def n_gram_count(self, content):
@@ -52,12 +51,6 @@ class Crawler:
         result = [i.strip() for i in result.copy() if i]
         return deepcopy(result)
 
-    def write_url(self, l):
-        with open("all_url.csv", 'r+', encoding='utf8') as f :
-            f.readlines()   # cursor point at last line
-            l = [i.strip()+"\n" for i in l]
-            f.writelines(l)
-
     def get_sublink(self, s_url):
         content = self.get_url_content(s_url)
         sub = self.get_url_links(content)
@@ -65,7 +58,7 @@ class Crawler:
 
     def get_all_links(self):
         url = self.url
-        self._before_filter_links = [url]
+        self._before_filter_links = []
         sub_l = self.get_sublink(url)
         count = 5
         while sub_l == [] and count > 0:
@@ -81,8 +74,8 @@ class Crawler:
             for result in as_completed(results):
                 self._before_filter_links += result.result()
         self._before_filter_links = self.filter_links()
-        self.write_url(self._before_filter_links.copy())
-        self.links = pd.DataFrame({'url':self._before_filter_links}).drop_duplicates(subset=['url'])
+        self.links = pd.DataFrame({'url':self._before_filter_links})
+        self.links.drop_duplicates(subset=['url'], inplace=True)
         print(url, "success")
         return self.links['url'].values
 
@@ -111,9 +104,8 @@ class GoalCrawler(Crawler):
         raw_url = url_parse.scheme + "://" + url_parse.netloc
         links = [raw_url+i if (i[0] == '/') else i for i in self._before_filter_links]    # concate url and /abc/def (route)
         links_edit = [unquote(i) for i in links]    #   change %E%0%9 (url encode) to thai lang
-        r = re.compile(r"https:\/\/www\.goal\.com\/th\/(ข่าว|ลิสต์)\/.*")
+        r = re.compile(r"(https:\/\/www\.goal\.com\/th\/(ข่าว|ลิสต์)\/)(?!\d).*")
         fil_links = list(filter(r.match, links_edit))
-        self.links = pd.DataFrame({'url':fil_links})
         return fil_links.copy()
 
 class SkySportCrawler(Crawler):

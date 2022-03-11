@@ -19,6 +19,12 @@ class CrawlerManager():
         d = pd.read_csv(self.file, index_col=False, on_bad_lines='skip') # import file and ignore bad line
         d = d.drop_duplicates(subset=['url'])   # drop duplicate
         return d['url'].values
+    
+    def save_links(self):
+        with open("all_url.csv", 'r+', encoding='utf8') as f :
+            f.readline()
+            l = [i.strip()+"\n" for i in self.all_links.values]
+            f.writelines(l)
 
     def get_all_links(self, cached=False):
         if cached:
@@ -32,7 +38,7 @@ class CrawlerManager():
             for result in as_completed(results):
                 all_links = np.append(all_links, result.result())
         self.all_links = pd.Series(all_links)
-        self.all_links.drop_duplicates(inplace=True)
+        self.save_links()
         return self.all_links.copy()
 
     def get_n_gram_multithread(self, word):
@@ -106,5 +112,5 @@ if __name__ == "__main__":
     manager = CrawlerManager()
     data = time_spent(manager.get_all_links)
     print(len(data))
-    data2 = time_spent(manager.get_n_gram_multithread, "Chelsea")
+    data2 = time_spent(manager.get_n_gram_multithread, "เมสซี")
     print(data2[:20])

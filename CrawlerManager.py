@@ -42,16 +42,21 @@ class CrawlerManager():
         self.save_links()
         return self.all_links.copy()
 
-    def get_n_gram_data(self, word):
+    def get_n_gram_data(self, word, progress=None):
         if len(self.all_links) == 0:
             self.all_links = self.read_cached()
         if word == "":
             return None
         self.word = word
         self.data = pd.DataFrame({'url':[], 'n_gram':[]})
+        links_lenght = len(self.all_links)
+        count = 0
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
             results = ( executor.submit(self.count_url_ngram, i) for i in self.all_links)
             for result in as_completed(results):
+                if progress:
+                    count += 1
+                    progress.emit((count/links_lenght)*100)
                 url, n = result.result()
                 self.data.loc[len(self.data.index)] = [url, n]
         self.data = self.data.sort_values(by=['n_gram'], ascending=False)

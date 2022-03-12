@@ -33,6 +33,8 @@ class Ui_MainWindow(object):
         self.tableWidget = QtWidgets.QTableView(self.centralwidget)
         self.tableWidget.setObjectName("tableWidget")
         self.gridLayout.addWidget(self.tableWidget, 2, 0, 1, 2)
+        self.progress_bar = QtWidgets.QProgressBar(self.centralwidget)
+        self.gridLayout.addWidget(self.progress_bar, 3, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 729, 26))

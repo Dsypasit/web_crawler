@@ -13,11 +13,12 @@ import re
 import webbrowser
 from CrawlerManager import CrawlerManager
 from model import PandasTableModel
+from Worker import Worker
 ########################################################################
 # IMPORT GUI FILE
 from football_interface import *
 from PyQt5.QtWidgets import QFileDialog, QListWidget, QTableWidgetItem, QApplication, QMainWindow, qApp, QListWidgetItem
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThreadPool
 ########################################################################
 
 ########################################################################
@@ -30,6 +31,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.crawler_manager = CrawlerManager()
 
+        self.threadpool = QThreadPool()
         #######################################################################
         # ADD FUNCTION ELEMENT
         #######################################################################
@@ -44,11 +46,25 @@ class MainWindow(QMainWindow):
     ########################################################################
     ## FUNCTION
     ########################################################################
+    def get_n_gram_data(self, progress_callback):
+        self.data = self.crawler_manager.get_n_gram_data(self.ui.lineEdit.text(), progress=progress_callback)
+        return self.data
+    
+    def show_table(self, df):
+        self.model = PandasTableModel(df)
+        self.ui.tableWidget.setModel(self.model)
+    
+    def progress_fn(self, v):
+        self.ui.progress_bar.setValue(v)
+
     def search(self):
         # self.crawler_manager.get_all_links()
-        self.data = self.crawler_manager.get_n_gram_data(self.ui.lineEdit.text())
-        self.model = PandasTableModel(self.data[:20])
-        self.ui.tableWidget.setModel(self.model)
+        worker = Worker(self.get_n_gram_data)
+        worker.signals.progress.connect(self.progress_fn)
+        worker.signals.result.connect(self.show_table)
+        worker.signals.finished.connect(self.ui.progress_bar.reset)
+
+        self.threadpool.start(worker)
     
     def open_link(self, item):
         for index in self.ui.tableWidget.selectionModel().selectedIndexes():

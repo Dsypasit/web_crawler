@@ -27,19 +27,27 @@ class CrawlerManager():
             l = [i.strip()+"\n" for i in self.all_links.values]
             f.writelines(l)
 
-    def get_all_links(self, cached=False):
+    def get_all_links(self, cached=False, progress=None):
         if cached:
             self.all_links = self.read_cached()
             return self.all_links
         with open(self.file, 'w', encoding="utf-8") as f :
             f.write("url\n")
         all_links = np.array([])
+        count = 0
+        if progress:
+            progress.emit(0)
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
             results = (executor.submit(self.get_links, link) for link in self.links)
             for result in as_completed(results):
+                if progress:
+                    count += 1
+                    progress.emit(((count/len(self.links))*100)-1)
                 all_links = np.append(all_links, result.result())
         self.all_links = pd.Series(all_links)
         self.save_links()
+        if progress:
+            progress.emit(100)
         return self.all_links.copy()
 
     def get_n_gram_data(self, word, progress=None):
@@ -51,6 +59,8 @@ class CrawlerManager():
         self.data = pd.DataFrame({'url':[], 'n_gram':[]})
         links_lenght = len(self.all_links)
         count = 0
+        if progress:
+            progress.emit(0)
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
             results = ( executor.submit(self.count_url_ngram, i) for i in self.all_links)
             for result in as_completed(results):

@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         # ADD FUNCTION ELEMENT
         #######################################################################
         self.ui.pushButton.clicked.connect(self.search)
+        self.ui.pushButton2.clicked.connect(self.refreshLink)
         self.ui.tableWidget.doubleClicked.connect(self.open_link)
         #######################################################################
         # SHOW WINDOW
@@ -53,6 +54,7 @@ class MainWindow(QMainWindow):
     def show_table(self, df):
         self.model = PandasTableModel(df)
         self.ui.tableWidget.setModel(self.model)
+        self.ui.tableWidget.setColumnWidth(0, 500)
     
     def progress_fn(self, v):
         self.ui.progress_bar.setValue(v)
@@ -62,6 +64,13 @@ class MainWindow(QMainWindow):
         worker = Worker(self.get_n_gram_data)
         worker.signals.progress.connect(self.progress_fn)
         worker.signals.result.connect(self.show_table)
+        worker.signals.finished.connect(self.ui.progress_bar.reset)
+
+        self.threadpool.start(worker)
+
+    def refreshLink(self):
+        worker = Worker(lambda progress_callback: self.crawler_manager.get_all_links(progress=progress_callback))
+        worker.signals.progress.connect(self.progress_fn)
         worker.signals.finished.connect(self.ui.progress_bar.reset)
 
         self.threadpool.start(worker)

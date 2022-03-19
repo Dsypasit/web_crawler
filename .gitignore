@@ -1,5 +1,3 @@
 .ipynb_checkpoints
-all_url.csv
-all_url2.csv
+*.csv
 __pycache__
-data.csv

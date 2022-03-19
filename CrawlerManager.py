@@ -43,7 +43,8 @@ class CrawlerManager():
                 if progress:
                     count += 1
                     progress.emit(((count/len(self.links))*100)-1)
-                all_links = np.append(all_links, result.result())
+                if len(result.result()) > 0:
+                    all_links = np.append(all_links, result.result())
         self.all_links = pd.Series(all_links)
         self.save_links()
         if progress:
@@ -98,8 +99,10 @@ class CrawlerManager():
     
     def get_links(self, url):
         crawler = self.create_crawler(url)
-        links = crawler.get_all_links()
-        return links
+        if crawler:
+            links = crawler.get_all_links()
+            return links
+        return []
     
     def create_crawler(self, url):
         if url == "https://www.goal.com/th":
@@ -113,7 +116,7 @@ class CrawlerManager():
         elif url == "https://www.bbc.com/sport/football":
             crawler = BBCCrawler()
         elif url == "https://www.dailymail.co.uk/sport/football":
-            crawler = DailyMailCrawler()
+            return
         elif url == "https://edition.cnn.com/sport/football":
             crawler = CNNCrawler()
         else:
@@ -132,5 +135,5 @@ if __name__ == "__main__":
     manager = CrawlerManager()
     data = time_spent(manager.get_all_links)
     print(len(data))
-    data2 = time_spent(manager.get_n_gram_data, "เมสซี")
-    print(data2[:20])
+    # data2 = time_spent(manager.get_n_gram_data, "เมสซี")
+    # print(data2[:20])

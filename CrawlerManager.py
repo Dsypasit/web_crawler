@@ -116,7 +116,7 @@ class CrawlerManager():
         elif url == "https://www.bbc.com/sport/football":
             crawler = BBCCrawler()
         elif url == "https://www.dailymail.co.uk/sport/football":
-            return
+            crawler = DailyMailCrawler()
         elif url == "https://edition.cnn.com/sport/football":
             crawler = CNNCrawler()
         else:

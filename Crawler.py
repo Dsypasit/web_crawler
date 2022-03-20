@@ -4,6 +4,7 @@ import pandas as pd
 import concurrent.futures
 from concurrent.futures import as_completed
 from urllib.parse import unquote, urlparse
+import urllib.robotparser
 from copy import deepcopy
 from time import time
 import numpy as np
@@ -19,8 +20,18 @@ class Crawler:
         self.regex = re.compile("")
         self._before_filter_links : list = []
 
+    def read_robot(self, link):
+        url_parse = urlparse(link)
+        robot_link = url_parse.scheme+"://"+url_parse.netloc+"/robots.txt"
+        rp = urllib.robotparser.RobotFileParser()
+        rp.set_url(robot_link)
+        rp.read()
+        return rp
+
     def get_url_content(self, link):
         if not self.check_url(link):
+            return
+        if not self.rp.can_fetch("*", link):
             return
         try:
             r = requests.get(link, timeout=3)
@@ -32,9 +43,11 @@ class Crawler:
 
     def filter_links(self):
         """ Filter links"""
-        if self.no_domain:
+        # if self._before_filter_links is None: return []
+        if self.no_domain and len(self._before_filter_links) > 0 :
             url_parse = urlparse(self.url)
             raw_url = url_parse.scheme + "://" + url_parse.netloc
+            self._before_filter_links = [i for i in self._before_filter_links if i]    # concate url and /abc/def (route)
             self._before_filter_links = [raw_url+i if (i[0] == '/') else i for i in self._before_filter_links]    # concate url and /abc/def (route)
         fil_links = list(filter(self.regex.match, self._before_filter_links))
         return fil_links.copy()
@@ -53,13 +66,15 @@ class Crawler:
         return deepcopy(result)
 
     def get_sublink(self, s_url):
-        content = self.get_url_content(s_url)
-        sub = self.get_url_links(content)
-        return sub.copy()
+        if self.rp.can_fetch("*", s_url):
+            content = self.get_url_content(s_url)
+            sub = self.get_url_links(content)
+            return sub.copy()
 
     def get_all_links(self):
         start = time()
         url = self.url
+        self.rp = self.read_robot(url)
         self._before_filter_links = []
         sub_l = self.get_sublink(url)
         count = 5

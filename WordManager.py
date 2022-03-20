@@ -18,7 +18,6 @@ class WordManager:
         return nouns
     
     def clean_text_th(self, text):
-        text = text.lower()
         thai_stopword = set(thai_stopwords())
         token = word_tokenize(text, engine='attacut')
         text_list = [t for t in token if t not in thai_stopword]
@@ -27,7 +26,7 @@ class WordManager:
         return text
 
     def clean_text(self, text):
-        text = text.lower()
+        # text = text.lower()
         eng_stopword = set(stopwords.words('english'))
         token = nltk.word_tokenize(text)
         text_list = [t for t in token if t not in eng_stopword]

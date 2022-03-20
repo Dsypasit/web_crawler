@@ -129,20 +129,22 @@ class ScrapManager:
 
     def n_gram_count(self, word, *contents):
         content = " ".join(contents)
+        content = content.lower()
         reg = re.compile(r'[a-zA-Z]')
+        word = word.lower()
         if reg.match(word):
             return content.count(word)
         else:
             return len(re.findall(word, content))
 
 if __name__ == "__main__":
-    # craw = CrawlerManager()
-    # craw.get_all_links()
+    craw = CrawlerManager()
+    craw.get_all_links()
     manager = ScrapManager()
     data = manager.get_all_data()
     # keyword_data = manager.get_keywords_data()
     # print(keyword_data)
-    manager.append_keywords('ลิเวอร์พูล')
+    manager.append_keywords('Manchester United')
     keywords_data2 = manager.get_keywords_data()
     print(keywords_data2)
     manager.save_data()

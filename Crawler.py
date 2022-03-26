@@ -41,9 +41,16 @@ class Crawler:
         except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout, requests.exceptions.InvalidSchema):
             pass
 
-    def filter_links(self):
+    def filter_links(self, links=[]):
         """ Filter links"""
         # if self._before_filter_links is None: return []
+        if len(links)>0:
+            url_parse = urlparse(self.url)
+            raw_url = url_parse.scheme + "://" + url_parse.netloc
+            links = [i for i in links if i]    # concate url and /abc/def (route)
+            links = [raw_url+i if (i[0] == '/') else i for i in links]    # concate url and /abc/def (route)
+            return links
+
         if self.no_domain and len(self._before_filter_links) > 0 :
             url_parse = urlparse(self.url)
             raw_url = url_parse.scheme + "://" + url_parse.netloc
@@ -77,6 +84,7 @@ class Crawler:
         self.rp = self.read_robot(url)
         self._before_filter_links = []
         sub_l = self.get_sublink(url)
+        sub_l = self.filter_links(sub_l)
         count = 5
         while sub_l == [] and count > 0:
             sub_l = self.get_sublink(url)
@@ -163,6 +171,37 @@ class DailyMailCrawler(Crawler):
         self.url = "https://www.dailymail.co.uk/sport/football"
         self.regex = re.compile(r'((https\:\/\/www\.dailymail\..*\/sport\/football\/article-\d+\/.*\.html)(?!#))')
 
+class NineZeroCrawler(Crawler):
+    def __init__(self):
+        super().__init__()
+        self.url = "https://www.90min.com/"
+        self.regex = re.compile(r'(https\:\/\/www\.90min\.com\/posts\/.*)')
+
+class TeamTalkCrawler(Crawler):
+    def __init__(self):
+        super().__init__()
+        self.url = "https://www.teamtalk.com"
+        self.regex = re.compile(r'(https\:\/\/www\.teamtalk\.com\/.*)')
+
+class Football365Crawler(Crawler):
+    def __init__(self):
+        super().__init__()
+        self.url = "https://www.football365.com/"
+        self.regex = re.compile(r'(https\:\/\/www\.football365\.com\/news\/.*)')
+
+class GiveMeSportCrawler(Crawler):
+    def __init__(self):
+        super().__init__()
+        self.url = "https://www.givemesport.com/"
+        self.regex = re.compile(r'(https\:\/\/www\.givemesport\.com\/\d{8}.*)')
+
+class ThairathCrawler(Crawler):
+    def __init__(self):
+        super().__init__()
+        self.url = "https://www.thairath.co.th/sport/eurofootball"
+        self.regex = re.compile(r'(https\:\/\/www\.thairath\..*\/sport\/(eurofootball|worldcup)\/.*)')
+        self.no_domain = True
+
 def time_spent(func, *args, **kwargs):
     start = time()
     result = func(*args, **kwargs)
@@ -172,6 +211,6 @@ def time_spent(func, *args, **kwargs):
 
 if __name__ == "__main__":
     pd.options.display.max_colwidth = 600
-    crawler = SkySportCrawler()
+    crawler = ThairathCrawler()
     data = time_spent(crawler.get_all_links)
     print(data[:20])

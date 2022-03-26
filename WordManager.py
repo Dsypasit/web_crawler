@@ -4,7 +4,19 @@ from pythainlp.tokenize import word_tokenize
 from pythainlp.tag import pos_tag
 from pythainlp.corpus import thai_stopwords
 import re
+from pythainlp.util import rank
 class WordManager:
+
+    def counter(self, content):
+        text = nltk.word_tokenize(content)
+        freq = nltk.FreqDist(text)
+        return freq.most_common(10)
+
+    def counter_th(self, content):
+        text = word_tokenize(content)
+        freq = rank(text)
+        return freq.most_common(10)
+
 
     def get_nouns(self, content):
         tokenized = nltk.word_tokenize(content)
@@ -15,6 +27,7 @@ class WordManager:
         text = word_tokenize(content, engine="attacut")
         noun_type = ['PRON', 'PROPN', 'NOUN', 'NPRP', 'NTTL', 'NCNM']
         nouns = [word for (word, pos) in pos_tag(text, corpus='pud') if word!=" " and pos in noun_type]
+        print(pos_tag(text,corpus='pud'))
         return nouns
     
     def clean_text_th(self, text):
@@ -72,7 +85,13 @@ class WordManager:
 
 if __name__ == '__main__':
     w = WordManager()
-    text = "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก"
-    text = w.clear_text_th(text)
-    n = w.get_nouns_th(text)
-    print(n)
+    # text = "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก"
+    # text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
+    # text =  "Hi. My name is John. How are you? John is my best friend."
+    # text = w.clean_text(text)
+    # # n = w.get_nouns_th(text)
+    # print(w.counter(text))
+
+    text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
+    text = w.clean_text_th(text)
+    w.get_nouns_th(text)

@@ -1,4 +1,4 @@
-from Crawler import SiamSportCrawler, SkySportCrawler, GoalCrawler, CNNCrawler, BBCCrawler, SoccerSuckCrawler, DailyMailCrawler
+from Crawler import *
 import concurrent.futures
 from concurrent.futures import as_completed
 import pandas as pd
@@ -10,8 +10,28 @@ pd.options.display.max_colwidth = 600
 class CrawlerManager():
     def __init__(self):
         self.worker = 1000
-        self.links = ["https://www.goal.com/th", "https://www.skysports.com/football", "https://www.siamsport.co.th/football/international", 
-        "https://www.bbc.com/sport/football", "https://www.dailymail.co.uk/sport/football", "https://edition.cnn.com/sport/football"]
+        self.links = ["https://www.goal.com/th",
+        "https://www.skysports.com/football",
+        "https://www.siamsport.co.th/football/international", 
+        "https://www.bbc.com/sport/football", 
+        "https://www.dailymail.co.uk/sport/football", 
+        "https://edition.cnn.com/sport/football", 
+        "https://www.90min.com/", 
+        "https://www.teamtalk.com",
+        "https://www.football365.com/",
+        "https://www.givemesport.com/", 
+        "https://www.thairath.co.th/sport/eurofootball",
+        "https://www.smmsport.com/football/international/",
+        "https://football.kapook.com/newslist",
+        "https://www.sportsmole.co.uk/",
+        "https://www.sportinglife.com/football/news",
+        "https://www.dailyrecord.co.uk/sport/football/football-news/",
+        "https://indianexpress.com/section/sports/football/",
+        "https://www.khaosod.co.th/%E0%B8%9A%E0%B8%AD%E0%B8%A5%E0%B9%82%E0%B8%A5%E0%B8%81/worldcup-news",
+        "https://news.thaipbs.or.th/search?q=%E0%B8%9F%E0%B8%B8%E0%B8%95%E0%B8%9A%E0%B8%AD%E0%B8%A5%E0%B9%82%E0%B8%A5%E0%B8%81",
+        "https://www.sportbible.com/football",
+        ]
+
         self.all_links = []
         self.data = pd.DataFrame({'url':[], 'n_gram':[]})
         self.file = "all_url.csv"
@@ -119,6 +139,32 @@ class CrawlerManager():
             crawler = DailyMailCrawler()
         elif url == "https://edition.cnn.com/sport/football":
             crawler = CNNCrawler()
+        elif url == NineZeroCrawler().url:
+            crawler = NineZeroCrawler()
+        elif url == TeamTalkCrawler().url:
+            crawler = TeamTalkCrawler()
+        elif url == Football365Crawler().url:
+            crawler = Football365Crawler()
+        elif url == GiveMeSportCrawler().url:
+            crawler = GiveMeSportCrawler()
+        elif url == ThairathCrawler().url:
+            crawler = ThairathCrawler()
+        elif url == SMMCrawler().url:
+            crawler = SMMCrawler()
+        elif url == KapookCrawler().url:
+            crawler = KapookCrawler()
+        elif url == SportMoleCrawler().url:
+            crawler = SportMoleCrawler()
+        elif url == DailyRecordCrawler().url:
+            crawler = DailyRecordCrawler()
+        elif url == IndianCrawler().url:
+            crawler = IndianCrawler()
+        elif url == KhaosodCrawler().url:
+            crawler = KhaosodCrawler()
+        elif url == TPBSCrawler().url:
+            crawler = TPBSCrawler()
+        elif url == SportBibleCrawler().url:
+            crawler = SportBibleCrawler()
         else:
             return
         return crawler

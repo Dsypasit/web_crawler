@@ -1,3 +1,4 @@
+from ast import expr_context
 import requests
 from bs4 import BeautifulSoup
 from Crawler import *
@@ -9,22 +10,31 @@ class Scrap:
         self.content = [['p']]
     
     def scrapping(self):
-        res = requests.get(self.url)
-        bs = BeautifulSoup(res.text, 'html.parser')
-        head = self.head_scrapping(bs)
-        content = self.content_scrapping(bs)
-        return (self.url, head, content)
+        try:
+            res = requests.get(self.url, timeout=3)
+            bs = BeautifulSoup(res.text, 'html.parser')
+            head = self.head_scrapping(bs)
+            content = self.content_scrapping(bs)
+            return (self.url, head, content)
+        except:
+            return (self.url, 'no header', 'no content')
 
     def head_scrapping(self, bs):
-        text = bs.find(*self.head).get_text()
-        return text.strip()
+        try:
+            text = bs.find(*self.head).get_text()
+            return text.strip()
+        except:
+            return "no header"
     
     def content_scrapping(self, bs):
-        text = []
-        for pattern in self.content:
-            text += bs.find_all(*pattern)
-        text = " ".join(( t.get_text().strip() for t in text ))
-        return text.strip()
+        try:
+            text = []
+            for pattern in self.content:
+                text += bs.find_all(*pattern)
+            text = " ".join(( t.get_text().strip() for t in text ))
+            return text.strip()
+        except:
+            return "no content"
 
 class CNNScrap(Scrap):
     def __init__(self, url):
@@ -37,36 +47,123 @@ class SkyScrap(Scrap):
         super().__init__(url)
 
     def head_scrapping(self, bs):
-        text = super().head_scrapping(bs).split('|')[0]
-        return text
+        try:
+            text = super().head_scrapping(bs).split('|')[0]
+            return text
+        except:
+            return ""
 
 class BBCScrap(Scrap):
     def __init__(self, url):
         super().__init__(url)
 
     def head_scrapping(self, bs):
-        text = super().head_scrapping(bs).split('-')[0]
-        return text
+        try:
+            text = super().head_scrapping(bs).split('-')[0]
+            return text
+        except:
+            return "no header"
 
 class GoalScrap(Scrap):
     def __init__(self, url):
         super().__init__(url)
 
     def content_scrapping(self, bs):
-        text = []
-        for pattern in self.content:
-            text += bs.find_all(*pattern)
-        text = " ".join(( t.get_text().strip() for t in text[:-2] ))
-        return text.strip()
+        try:
+            text = []
+            for pattern in self.content:
+                text += bs.find_all(*pattern)
+            text = " ".join(( t.get_text().strip() for t in text[:-2] ))
+            return text.strip()
+        except:
+            return "no content"
     
     def head_scrapping(self, bs):
-        text = super().head_scrapping(bs).split('|')[0]
-        return text
-        
+        try:
+            text = super().head_scrapping(bs).split('|')[0]
+            return text
+        except:
+            return "no header"
+
+class SiamScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class NineZeroScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class' : 'tagStyle_1l41t8p-o_O-title_1c5zcc4-o_O-sidesPadding_1kaga1a'}]
+
+class TeamTalkScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class Football365Scrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class ExpressScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class GivemeScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class': 'gms-content-headline'}]
+
+class ThairathScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class SmmScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class': 'article-title'}]
+
+class KapookScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class SportMoleScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1']
+
+class SportingLifeScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class':'Article__ArticleHeadline-wr9av4-2 fKQgEP'}]
+
+class IndianScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class':'native_story_title'}]
+
+class KhaosodScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class':'udsg__main-title'}]
+
+class TPBSScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class':'content-title'}]
+
+class SportBibleScrap(Scrap):
+    def __init__(self, url):
+        super().__init__(url)
+        self.head = ['h1', {'class':'css-1h8vhnh'}]
+
 
 if __name__ == "__main__":
     # crawler = GoalCrawler()
     # link = crawler.get_all_links()
-    sc = BBCScrap('https://www.bbc.com/sport/football/60652298')
-    sc.scrapping()
+    sc = ThairathScrap('https://www.sportsmole.co.uk/taekwondo/team-gb/tokyo-2020-olympics/update/tokyo-2020-team-gb-guaranteed-first-medal-of-games_456827.html')
+    print(sc.scrapping())
     print("-"*30)

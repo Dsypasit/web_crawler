@@ -1,5 +1,6 @@
 from pyparsing import Word
-from Scrap import GoalCrawler, GoalScrap, SkyScrap, BBCScrap, CNNScrap
+from Crawler import ExpressCrawler, Football365Crawler, GiveMeSportCrawler, IndianCrawler, KapookCrawler, KhaosodCrawler, NineZeroCrawler, SMMCrawler, SiamSportCrawler, SportBibleCrawler, SportMoleCrawler, SportingLifeCrawler, TPBSCrawler, TeamTalkCrawler, ThairathCrawler
+from Scrap import ExpressScrap, Football365Scrap, GivemeScrap, GoalCrawler, GoalScrap, IndianScrap, KapookScrap, KhaosodScrap, NineZeroScrap, SiamScrap, SkyScrap, BBCScrap, CNNScrap, SmmScrap, SportBibleScrap, SportMoleScrap, SportingLifeScrap, TPBSScrap, TeamTalkScrap, ThairathScrap
 from urllib.parse import urlparse
 import pandas as pd
 import concurrent.futures
@@ -41,6 +42,11 @@ class ScrapManager:
     def append_keywords(self, word):
         self.keywords.append(word)
         self.keywords = list(set(self.keywords))
+    
+    def _merge_new_keywords_data(self, new_data):
+            data = pd.concat([self.keywords_data, new_data]).drop_duplicates(['keywords', 'date'], keep='last')
+            data.sort_values(by="date", key=lambda i:pd.to_datetime(i, format=self.date_format), inplace=True)
+            return data
                 
     def save_keywords_data(self):
         try:
@@ -93,6 +99,36 @@ class ScrapManager:
                 scrapper = BBCScrap(url)
             elif domain in "https://edition.cnn.com/sport/football":
                 scrapper = CNNScrap(url)
+            elif domain in SiamSportCrawler().url:
+                scrapper = SiamScrap(url)
+            elif domain in NineZeroCrawler().url:
+                scrapper = NineZeroScrap(url)
+            elif domain in TeamTalkCrawler().url:
+                scrapper = TeamTalkScrap(url)
+            elif domain in Football365Crawler().url:
+                scrapper = Football365Scrap(url)
+            elif domain in ExpressCrawler().url:
+                scrapper = ExpressScrap(url)
+            elif domain in GiveMeSportCrawler().url:
+                scrapper = GivemeScrap(url)
+            elif domain in ThairathCrawler().url:
+                scrapper = ThairathScrap(url)
+            elif domain in SMMCrawler().url:
+                scrapper = SmmScrap(url)
+            elif domain in KapookCrawler().url:
+                scrapper = KapookScrap(url)
+            elif domain in SportMoleCrawler().url:
+                scrapper = SportMoleScrap(url)
+            elif domain in SportingLifeCrawler().url:
+                scrapper = SportingLifeScrap(url)
+            elif domain in IndianCrawler().url:
+                scrapper = IndianScrap(url)
+            elif domain in KhaosodCrawler().url:
+                scrapper = KhaosodScrap(url)
+            elif domain in TPBSCrawler().url:
+                scrapper = TPBSScrap(url)
+            elif domain in SportBibleCrawler().url:
+                scrapper = SportBibleScrap(url)
         if not scrapper:
             return
         data = scrapper.scrapping()
@@ -105,16 +141,16 @@ class ScrapManager:
     def get_keywords_data(self):
         if len(self.url_data) == 0:
             self.get_all_data()
-        self.keywords_data = pd.DataFrame({'keywords':pd.Series(dtype='str'), 'count':pd.Series(dtype='int'), 'date':pd.Series(dtype='str'), 'lang':pd.Series(dtype='str')})
+        keywords_data = pd.DataFrame({'keywords':pd.Series(dtype='str'), 'count':pd.Series(dtype='int'), 'date':pd.Series(dtype='str'), 'lang':pd.Series(dtype='str')})
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
             results = ( executor.submit(self.keywords_processing, i) for i in self.keywords)
             for result in as_completed(results):
                 result_data = result.result()
-                self.keywords_data.loc[len(self.keywords_data.index)] = result_data
+                keywords_data.loc[len(keywords_data.index)] = result_data
+        self.keywords_data = self._merge_new_keywords_data(keywords_data)
         return self.keywords_data.copy()
     
     def keywords_processing(self, word):
-        start = time.time()
         count = 0
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor:
             results = (executor.submit(lambda contents: self.n_gram_count(word, *contents), contents) for contents in self.url_data.loc[:, ['header', 'content']].values)
@@ -123,8 +159,7 @@ class ScrapManager:
         date = datetime.datetime.today().strftime(self.date_format)
         # date = datetime.datetime.today() + datetime.timedelta(days=1)
         # date = date.strftime(self.date_format)
-        lang = 'eng' if self.is_eng(word) else 'th'
-        print(word, time.time() - start)
+        lang = 'en' if self.is_eng(word) else 'th'
         return word, count, date, lang
 
     def n_gram_count(self, word, *contents):
@@ -138,13 +173,16 @@ class ScrapManager:
             return len(re.findall(word, content))
 
 if __name__ == "__main__":
-    craw = CrawlerManager()
-    craw.get_all_links()
+    # craw = CrawlerManager()
+    # craw.get_all_links()
     manager = ScrapManager()
+    start = time.time()
     data = manager.get_all_data()
+    print(data[:20])
+    print(time.time() - start)
     # keyword_data = manager.get_keywords_data()
     # print(keyword_data)
-    manager.append_keywords('Manchester United')
-    keywords_data2 = manager.get_keywords_data()
-    print(keywords_data2)
+    # manager.append_keywords('Manchester United')
+    # keywords_data2 = manager.get_keywords_data()
+    # print(keywords_data2)
     manager.save_data()

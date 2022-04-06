@@ -40,6 +40,11 @@ class KeywordManager:
         else:
             return len(re.findall(word, content))
     
+    def get_domain(self, keyword):
+        path = self.directory+'/'+ keyword
+        keywords = [name for name in os.listdir(path) if os.path.isdir(path+'/'+name)]
+        return keywords
+
     def get_all_keywords(self):
         keywords = [name for name in os.listdir(self.directory)]
         return keywords
@@ -47,11 +52,10 @@ class KeywordManager:
     def search_keyword(self, keyword):
         keywords = self.get_all_keywords()
         if keyword in keywords:
-            data = pd.read_csv(self.directory+'/'+keyword+'/'+keyword+'.csv')
-            return data
+            self.keyword_data = pd.read_csv(self.directory+'/'+keyword+'/'+keyword+'.csv')
         else:
-            data = self.new_keyword_data(keyword)
-            return data
+            self.keyword_data = self.new_keyword_data(keyword)
+        return self.keyword_data
     
     def separated_domain(self, df, keyword):
         domains = df['Domain'].unique().tolist()
@@ -61,7 +65,6 @@ class KeywordManager:
             self.check_folder(path)
             filename = path + keyword + '.csv'
             data.to_csv(filename, index=False, encoding='utf-8')
-        
     
     def new_keyword_data(self, keyword):
         data = pd.DataFrame(columns=self._columns)
@@ -71,15 +74,27 @@ class KeywordManager:
             title = row['header']
             domain = urlparse(row['url']).netloc
             count = self.n_gram_count(keyword, row['content'], row['header'])
-            data.loc[len(data)] = [link, title, keyword, count, 'Positive', domain]
+            if count>0:
+                data.loc[len(data)] = [link, title, keyword, count, 'Positive', domain]
         data = data.sort_values(by=['Count'], ascending=False)
         self.separated_domain(data, keyword)
         data.to_csv(f'{self.directory}/{keyword}/{keyword}.csv', index=False, encoding='utf-8')
+        return data
+    
+    def filter_domain(self, keyword, *domains):
+        data = pd.DataFrame(columns=self._columns)
+        path = f"{self.directory}/{keyword}"
+        for d in domains:
+            df = pd.read_csv(f"{path}/{d}/{keyword}.csv")
+            data = pd.concat([data, df])
+        data = data.sort_values(by=['Count'], ascending=False)
         return data
 
 
 if __name__ == "__main__":
     k = KeywordManager()
-    # data = k.new_keyword('chelsea')
-    print(k.get_all_keywords())
+    # data = k.search_keyword('arsenal')
+    # print(k.get_all_keywords())
+    data = k.get_domain('chelsea')
+    print(data)
         

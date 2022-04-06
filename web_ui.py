@@ -108,6 +108,7 @@ class Ui_App(object):
         self.menuImport.setText(_translate("App", "Import"))
         self.actionUnion.setText(_translate("App", "Union"))
         self.base_table.setSortingEnabled(True)
+        self.base_table.setEditTriggers(QtWidgets.QTableView.NoEditTriggers)
 
 
 if __name__ == "__main__":

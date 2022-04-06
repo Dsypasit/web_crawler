@@ -1,5 +1,5 @@
 from web_ui import Ui_App
-from domain_ui import Ui_Dialog
+from domain_ui import DomainFilter
 from model import PandasTableModel
 
 from KeywordManager import KeywordManager
@@ -14,11 +14,13 @@ class MainWindow(QMainWindow):
         self.ui = Ui_App()
         self.ui.setupUi(self)
         self.keyword_manager = KeywordManager()
+        self.current_domains = {}
 
         self.updateKeywords()
 
-        self.ui.SearchList.itemDoubleClicked.connect(self.showKeywordsData)
+        self.ui.SearchList.itemDoubleClicked.connect(self.selectKeywordsData)
         self.ui.base_table.doubleClicked.connect(self.openLink)
+        self.ui.pushButton.clicked.connect(self.filterDomainPopup)
 
     def updateKeywords(self):
         self.keywords = self.keyword_manager.get_all_keywords()
@@ -31,11 +33,13 @@ class MainWindow(QMainWindow):
         self.ui.base_table.setColumnWidth(0, 200)
         self.ui.base_table.setColumnWidth(1, 200)
     
-    def showKeywordsData(self, item):
+    def selectKeywordsData(self, item):
         self.keyword = item.text()
         self.data = self.keyword_manager.search_keyword(self.keyword)
         self.showTable()
         self.ui.status_base_label.setText(f"{len(self.data.index)} links")
+        domains_list = self.keyword_manager.get_domain(self.keyword)
+        self.current_domains = {name: False for name in domains_list}
    
     def openLink(self, item):
         for index in self.ui.base_table.selectionModel().selectedIndexes():
@@ -43,6 +47,16 @@ class MainWindow(QMainWindow):
             if value.startswith("https://") or value.startswith("http://"):
                 webbrowser.open(value)
                 return
+    
+    def filterDomainPopup(self):
+        print(self.current_domains)
+        filter_dialog = DomainFilter(self)
+        filter_dialog.show()
+    
+    def filterDomain(self):
+        domains = [domain for domain in self.current_domains.keys() if self.current_domains[domain]]
+        self.data = self.keyword_manager.filter_domain(self.keyword, *domains)
+        self.showTable()
 
         
 

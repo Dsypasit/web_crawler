@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from copy import deepcopy
 
 
 class Ui_Dialog(object):
@@ -30,6 +31,45 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Domain"))
 
+class DomainFilter(QtWidgets.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.domains = deepcopy(parent.current_domains)
+        self.resize(400, 300)
+        self.listWidget = QtWidgets.QListWidget(self)
+        self.listWidget.setGeometry(QtCore.QRect(70, 30, 256, 192))
+        self.listWidget.setObjectName("listWidget")
+        self.buttonBox = QtWidgets.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(120, 240, 156, 23))
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.listWidget.itemChanged.connect(self.onCheckItem)
+        self.buttonBox.accepted.connect(self.acceptedChange)
+        self.buttonBox.rejected.connect(self.close)
+
+        self.createItems()
+    
+    def acceptedChange(self) -> None:
+        self.parent.current_domains = self.domains
+        self.parent.filterDomain()
+        self.close()
+    
+    def onCheckItem(self, item):
+        domain = item.text()
+        self.domains[domain] = not self.domains[domain]
+    
+    def createItems(self):
+        for domain in self.domains.keys():
+            item = QtWidgets.QListWidgetItem()
+            item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+            if self.domains[domain]:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+            item.setData(QtCore.Qt.DisplayRole, domain)
+            self.listWidget.addItem(item)
 
 if __name__ == "__main__":
     import sys

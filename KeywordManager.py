@@ -1,3 +1,4 @@
+from ast import keyword
 import pandas as pd
 import os
 import re
@@ -39,6 +40,19 @@ class KeywordManager:
         else:
             return len(re.findall(word, content))
     
+    def get_all_keywords(self):
+        keywords = [name for name in os.listdir(self.directory)]
+        return keywords
+
+    def search_keyword(self, keyword):
+        keywords = self.get_all_keywords()
+        if keyword in keywords:
+            data = pd.read_csv(self.directory+'/'+keyword+'/'+keyword+'.csv')
+            return data
+        else:
+            data = self.new_keyword_data(keyword)
+            return data
+    
     def separated_domain(self, df, keyword):
         domains = df['Domain'].unique().tolist()
         for domain in domains:
@@ -49,7 +63,7 @@ class KeywordManager:
             data.to_csv(filename, index=False, encoding='utf-8')
         
     
-    def new_keyword(self, keyword):
+    def new_keyword_data(self, keyword):
         data = pd.DataFrame(columns=self._columns)
         self.check_folder(f'{self.directory}/{keyword}')
         for index, row in self.data_raw.iterrows():
@@ -66,6 +80,6 @@ class KeywordManager:
 
 if __name__ == "__main__":
     k = KeywordManager()
-    data = k.new_keyword('chelsea')
-    print(data.head())
+    # data = k.new_keyword('chelsea')
+    print(k.get_all_keywords())
         

@@ -32,3 +32,13 @@ class PandasTableModel(QtGui.QStandardItemModel):
                 return str(self._data.iloc[index.row(), index.column()])
         # elif role == Qt.EditRole:
         #         return str(self._data.iloc[index.row(), index.column()])
+    
+    def sort(self, Ncol, order):
+        """Sort table by given column number.
+        """
+        try:
+            self.layoutAboutToBeChanged.emit()
+            self._data = self._data.sort_values(self._data.columns[Ncol], ascending=not order)
+            self.layoutChanged.emit()
+        except Exception as e:
+            print(e)

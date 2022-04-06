@@ -92,6 +92,8 @@ if __name__ == '__main__':
     # # n = w.get_nouns_th(text)
     # print(w.counter(text))
 
-    text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
-    text = w.clean_text_th(text)
-    w.get_nouns_th(text)
+    # text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
+    # text = w.clean_text_th(text)
+    # w.get_nouns_th(text)
+    print(stopwords.words('english'))
+    print(thai_stopwords())

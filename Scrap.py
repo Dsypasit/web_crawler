@@ -11,13 +11,13 @@ class Scrap:
     
     def scrapping(self):
         try:
-            res = requests.get(self.url, timeout=3)
-            bs = BeautifulSoup(res.text, 'html.parser')
-            head = self.head_scrapping(bs)
-            content = self.content_scrapping(bs)
-            return (self.url, head, content)
+            res = requests.get(self.url, timeout=30)
         except:
-            return (self.url, 'no header', 'no content')
+            return None
+        bs = BeautifulSoup(res.text, 'html.parser')
+        head = self.head_scrapping(bs)
+        content = self.content_scrapping(bs)
+        return (self.url, head, content)
 
     def head_scrapping(self, bs):
         try:
@@ -164,6 +164,6 @@ class SportBibleScrap(Scrap):
 if __name__ == "__main__":
     # crawler = GoalCrawler()
     # link = crawler.get_all_links()
-    sc = ThairathScrap('https://www.sportsmole.co.uk/taekwondo/team-gb/tokyo-2020-olympics/update/tokyo-2020-team-gb-guaranteed-first-medal-of-games_456827.html')
+    sc = SportBibleScrap('https://www.sportbible.com/football/marcandre-ter-stegen-didnt-pick-lionel-messi-in-his-dream-xi-20220320')
     print(sc.scrapping())
     print("-"*30)

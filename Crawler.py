@@ -34,7 +34,6 @@ class Crawler:
     
     def session(self):
         self.s = requests.Session()
-        self.s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36'
         self.s.max_redirects = 30
 
     def get_url_content(self, link):
@@ -209,6 +208,13 @@ class TeamTalkCrawler(Crawler):
         self.url = "https://www.teamtalk.com"
         self.regex = re.compile(r'(https\:\/\/www\.teamtalk\.com\/news\/.*)')
 
+class ExpressCrawler(Crawler):
+    def __init__(self):
+        super().__init__()
+        self.url = "https://www.express.co.uk/sport/football/"
+        self.regex = re.compile(r'(https\:\/\/www\.express\..*\/sport\/football\/\d{7}\/.*)')
+        self.no_domain = True
+
 class Football365Crawler(Crawler):
     def __init__(self):
         super().__init__()
@@ -251,15 +257,14 @@ class SportingLifeCrawler(Crawler):
     def __init__(self):
         super().__init__()
         self.url = "https://www.sportinglife.com/football/news"
-        self.regex = re.compile(r'(https\:\/\/www\.sportinglife\..*\d{6})')
+        self.regex = re.compile(r'(https\:\/\/www\.sportinglife\.com\/football\/news\/.*\d{6})')
         self.no_domain = True
 
 class DailyRecordCrawler(Crawler):
     def __init__(self):
         super().__init__()
         self.url = "https://www.dailyrecord.co.uk/sport/football/football-news/"
-        self.regex = re.compile(r'(https\:\/\/www\.dailyrecord\..*-\d{8})')
-        self.no_domain = True
+        self.regex = re.compile(r'(https\:\/\/www\.dailyrecord\.co.uk\/sport\/football\/.*)')
 
 class IndianCrawler(Crawler):
     def __init__(self):
@@ -294,6 +299,6 @@ if __name__ == "__main__":
         print(time()-start)
         return result
     pd.options.display.max_colwidth = 600
-    crawler = TimesnownewsCrawler()
+    crawler = TPBSCrawler()
     data = time_spent(crawler.get_all_links)
     print(data[:21])

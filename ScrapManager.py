@@ -89,47 +89,45 @@ class ScrapManager:
     def get_data(self, url):
         domain = self.url_domain(url)
         scrapper = None
-        if self.selected_lang in ['th', 'all']:
-            if domain in "https://www.goal.com/th":
-                scrapper = GoalScrap(url)
-        if self.selected_lang in ['en', 'all']:
-            if domain in "https://www.skysports.com/football":
-                scrapper = SkyScrap(url)
-            elif domain in "https://www.bbc.co.uk":
-                scrapper = BBCScrap(url)
-            elif domain in "https://edition.cnn.com/sport/football":
-                scrapper = CNNScrap(url)
-            elif domain in SiamSportCrawler().url:
-                scrapper = SiamScrap(url)
-            elif domain in NineZeroCrawler().url:
-                scrapper = NineZeroScrap(url)
-            elif domain in TeamTalkCrawler().url:
-                scrapper = TeamTalkScrap(url)
-            elif domain in Football365Crawler().url:
-                scrapper = Football365Scrap(url)
-            elif domain in ExpressCrawler().url:
-                scrapper = ExpressScrap(url)
-            elif domain in GiveMeSportCrawler().url:
-                scrapper = GivemeScrap(url)
-            elif domain in ThairathCrawler().url:
-                scrapper = ThairathScrap(url)
-            elif domain in SMMCrawler().url:
-                scrapper = SmmScrap(url)
-            elif domain in KapookCrawler().url:
-                scrapper = KapookScrap(url)
-            elif domain in SportMoleCrawler().url:
-                scrapper = SportMoleScrap(url)
-            elif domain in SportingLifeCrawler().url:
-                scrapper = SportingLifeScrap(url)
-            elif domain in IndianCrawler().url:
-                scrapper = IndianScrap(url)
-            elif domain in KhaosodCrawler().url:
-                scrapper = KhaosodScrap(url)
-            elif domain in TPBSCrawler().url:
-                scrapper = TPBSScrap(url)
-            elif domain in SportBibleCrawler().url:
-                scrapper = SportBibleScrap(url)
-        if not scrapper:
+        if domain in "https://www.goal.com/th":
+            scrapper = GoalScrap(url)
+        elif domain in "https://www.skysports.com/football":
+            scrapper = SkyScrap(url)
+        elif domain in "https://www.bbc.co.uk":
+            scrapper = BBCScrap(url)
+        elif domain in "https://edition.cnn.com/sport/football":
+            scrapper = CNNScrap(url)
+        elif domain in SiamSportCrawler().url:
+            scrapper = SiamScrap(url)
+        elif domain in NineZeroCrawler().url:
+            scrapper = NineZeroScrap(url)
+        elif domain in TeamTalkCrawler().url:
+            scrapper = TeamTalkScrap(url)
+        elif domain in Football365Crawler().url:
+            scrapper = Football365Scrap(url)
+        elif domain in ExpressCrawler().url:
+            scrapper = ExpressScrap(url)
+        elif domain in GiveMeSportCrawler().url:
+            scrapper = GivemeScrap(url)
+        elif domain in ThairathCrawler().url:
+            scrapper = ThairathScrap(url)
+        elif domain in SMMCrawler().url:
+            scrapper = SmmScrap(url)
+        elif domain in KapookCrawler().url:
+            scrapper = KapookScrap(url)
+        elif domain in SportMoleCrawler().url:
+            scrapper = SportMoleScrap(url)
+        elif domain in SportingLifeCrawler().url:
+            scrapper = SportingLifeScrap(url)
+        elif domain in IndianCrawler().url:
+            scrapper = IndianScrap(url)
+        elif domain in KhaosodCrawler().url:
+            scrapper = KhaosodScrap(url)
+        elif domain in TPBSCrawler().url:
+            scrapper = TPBSScrap(url)
+        elif domain in SportBibleCrawler().url:
+            scrapper = SportBibleScrap(url)
+        else:
             return
         data = scrapper.scrapping()
         return data

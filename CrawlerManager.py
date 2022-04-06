@@ -30,6 +30,7 @@ class CrawlerManager():
         "https://www.khaosod.co.th/%E0%B8%9A%E0%B8%AD%E0%B8%A5%E0%B9%82%E0%B8%A5%E0%B8%81/worldcup-news",
         "https://news.thaipbs.or.th/search?q=%E0%B8%9F%E0%B8%B8%E0%B8%95%E0%B8%9A%E0%B8%AD%E0%B8%A5%E0%B9%82%E0%B8%A5%E0%B8%81",
         "https://www.sportbible.com/football",
+        "https://www.express.co.uk/sport/football",
         ]
 
         self.all_links = []
@@ -165,6 +166,8 @@ class CrawlerManager():
             crawler = TPBSCrawler()
         elif url == SportBibleCrawler().url:
             crawler = SportBibleCrawler()
+        elif url == ExpressCrawler().url:
+            crawler = ExpressCrawler()
         else:
             return
         return crawler

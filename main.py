@@ -6,6 +6,7 @@ from KeywordManager import KeywordManager
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem
 import sys
+import webbrowser
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -17,6 +18,7 @@ class MainWindow(QMainWindow):
         self.updateKeywords()
 
         self.ui.SearchList.itemDoubleClicked.connect(self.showKeywordsData)
+        self.ui.base_table.doubleClicked.connect(self.openLink)
 
     def updateKeywords(self):
         self.keywords = self.keyword_manager.get_all_keywords()
@@ -33,6 +35,14 @@ class MainWindow(QMainWindow):
         self.keyword = item.text()
         self.data = self.keyword_manager.search_keyword(self.keyword)
         self.showTable()
+        self.ui.status_base_label.setText(f"{len(self.data.index)} links")
+   
+    def openLink(self, item):
+        for index in self.ui.base_table.selectionModel().selectedIndexes():
+            value = str(self.data.iloc[index.row()][index.column()])
+            if value.startswith("https://") or value.startswith("http://"):
+                webbrowser.open(value)
+                return
 
         
 

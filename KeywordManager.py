@@ -3,6 +3,10 @@ import pandas as pd
 import os
 import re
 from urllib.parse import urlparse
+from Sentiment import Sentiment
+import langdetect
+import concurrent.futures
+from concurrent.futures import as_completed
 
 class KeywordManager:
 
@@ -15,9 +19,11 @@ class KeywordManager:
             'Keyword', 
             'Count', 
             'Sentiment',
+            'Language',
             'Domain']
         self.data = pd.DataFrame(columns=self._columns)
         self.csv_options =  {}
+        self.sentiment = Sentiment()
         
 
         self.check_folder(self.directory)
@@ -73,6 +79,8 @@ class KeywordManager:
             link = row['url']
             title = row['header']
             domain = urlparse(row['url']).netloc
+            sentiment = self.sentiment.checksentimentword(" ".join([row['header'], row['content']]))
+            lang = self.check_lang(title)
             count = self.n_gram_count(keyword, row['content'], row['header'])
             if count>0:
                 data.loc[len(data)] = [link, title, keyword, count, 'Positive', domain]

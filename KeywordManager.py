@@ -7,6 +7,7 @@ from Sentiment import Sentiment
 import langdetect
 import concurrent.futures
 from concurrent.futures import as_completed
+import time
 
 class KeywordManager:
 
@@ -55,12 +56,14 @@ class KeywordManager:
         keywords = [name for name in os.listdir(self.directory)]
         return keywords
 
-    def search_keyword(self, keyword):
+    def search_keyword(self, keyword, progress=None):
         keywords = self.get_all_keywords()
         if keyword in keywords and os.path.exists(self.directory+'/'+keyword+'/'+keyword+'.csv'):
             self.keyword_data = pd.read_csv(self.directory+'/'+keyword+'/'+keyword+'.csv')
+            if progress != None:
+                progress.emit(90)
         else:
-            self.keyword_data = self.new_keyword_data(keyword)
+            self.keyword_data = self.new_keyword_data(keyword, progress)
         return self.keyword_data
     
     def separated_domain(self, df, keyword):
@@ -85,13 +88,17 @@ class KeywordManager:
         else:
             return None
     
-    def new_keyword_data(self, keyword):
+    def new_keyword_data(self, keyword, progress=None):
         data = pd.DataFrame(columns=self._columns)
         self.check_folder(f'{self.directory}/{keyword}')
+        count = 0
         with concurrent.futures.ThreadPoolExecutor(1000) as exercutor:
             results = (exercutor.submit(self._get_row_data, (keyword, row)) for index, row in self.data_raw.iterrows())
             for result in as_completed(results):
                 row_data = result.result()
+                if progress != None:
+                    progress.emit(count/len(self.data_raw)*80)
+                    count += 1
                 if row_data != None:
                     data.loc[len(data)] = row_data
         data = data.sort_values(by=['Count'], ascending=False)

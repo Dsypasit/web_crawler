@@ -57,7 +57,7 @@ class KeywordManager:
 
     def search_keyword(self, keyword):
         keywords = self.get_all_keywords()
-        if keyword in keywords:
+        if keyword in keywords and os.path.exists(self.directory+'/'+keyword+'/'+keyword+'.csv'):
             self.keyword_data = pd.read_csv(self.directory+'/'+keyword+'/'+keyword+'.csv')
         else:
             self.keyword_data = self.new_keyword_data(keyword)
@@ -72,22 +72,39 @@ class KeywordManager:
             filename = path + keyword + '.csv'
             data.to_csv(filename, index=False, encoding='utf-8')
     
+    def _get_row_data(self, data):
+        keyword, row = data
+        link = row['url']
+        title = row['header']
+        domain = urlparse(row['url']).netloc
+        sentiment = self.sentiment.checksentimentword(" ".join([row['header'], row['content']]))
+        lang = self.check_lang(title)
+        count = self.n_gram_count(keyword, row['content'], row['header'])
+        if count>0:
+            return [link, title, keyword, count, sentiment, lang, domain]
+        else:
+            return None
+    
     def new_keyword_data(self, keyword):
         data = pd.DataFrame(columns=self._columns)
         self.check_folder(f'{self.directory}/{keyword}')
-        for index, row in self.data_raw.iterrows():
-            link = row['url']
-            title = row['header']
-            domain = urlparse(row['url']).netloc
-            sentiment = self.sentiment.checksentimentword(" ".join([row['header'], row['content']]))
-            lang = self.check_lang(title)
-            count = self.n_gram_count(keyword, row['content'], row['header'])
-            if count>0:
-                data.loc[len(data)] = [link, title, keyword, count, 'Positive', domain]
+        with concurrent.futures.ThreadPoolExecutor(1000) as exercutor:
+            results = (exercutor.submit(self._get_row_data, (keyword, row)) for index, row in self.data_raw.iterrows())
+            for result in as_completed(results):
+                row_data = result.result()
+                if row_data != None:
+                    data.loc[len(data)] = row_data
         data = data.sort_values(by=['Count'], ascending=False)
         self.separated_domain(data, keyword)
         data.to_csv(f'{self.directory}/{keyword}/{keyword}.csv', index=False, encoding='utf-8')
         return data
+    
+    def check_lang(self, text):
+        pattern = re.compile(r"[\u0E00-\u0E7F]")
+        if len(re.findall(pattern, text)) > 0:
+            return 'th'
+        else:
+            return 'en'
     
     def filter_domain(self, keyword, *domains):
         data = pd.DataFrame(columns=self._columns)
@@ -101,8 +118,13 @@ class KeywordManager:
 
 if __name__ == "__main__":
     k = KeywordManager()
-    # data = k.search_keyword('arsenal')
+    data = k.search_keyword('chelsea')
+    data = k.search_keyword('arsenal')
+    data = k.search_keyword('liverpool')
+    data = k.search_keyword('แมนยู')
+    data = k.search_keyword('โรนัลโด้')
+    data = k.search_keyword('เมสซี่')
     # print(k.get_all_keywords())
-    data = k.get_domain('chelsea')
+    # data = k.get_domain('ar')
     print(data)
         

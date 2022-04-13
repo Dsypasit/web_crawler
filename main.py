@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
         self.threadpool = QThreadPool()
 
         self.updateKeywords()
+        self.keywordsTabale()
 
         self.ui.SearchList.itemDoubleClicked.connect(self.selectKeywordsThread)
         self.ui.base_table.doubleClicked.connect(self.openLink)
@@ -36,7 +37,6 @@ class MainWindow(QMainWindow):
         self.ui.base_table.setModel(self.model)
         self.ui.base_table.setColumnWidth(0, 200)
         self.ui.base_table.setColumnWidth(1, 200)
-
     
     def searchKeyword(self, progress_callback=None):
         progress_callback.emit(0)
@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
         self.ui.base_label.setText(self.keyword)
         progress_callback.emit(100)
         self.updateKeywords()
+        self.keywordsTabale()
         self.ui.Search_LineEdit.clear()
     
     def progress_update(self, v):
@@ -103,8 +104,10 @@ class MainWindow(QMainWindow):
         self.data = self.keyword_manager.filter_domain(self.keyword, *domains)
         self.showTable()
 
-        
-
+    def keywordsTabale(self):
+        self.keywords_data = self.keyword_manager.keywords_information()
+        self.keywords_model = PandasTableModel(self.keywords_data)
+        self.ui.keywordView.setModel(self.keywords_model)
         
 
 if __name__ == "__main__":

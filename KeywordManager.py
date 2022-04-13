@@ -8,6 +8,7 @@ import langdetect
 import concurrent.futures
 from concurrent.futures import as_completed
 import time
+import random
 
 class KeywordManager:
 
@@ -53,7 +54,7 @@ class KeywordManager:
         return keywords
 
     def get_all_keywords(self):
-        keywords = [name for name in os.listdir(self.directory)]
+        keywords = [name for name in os.listdir(self.directory) if os.path.isdir(self.directory+'/'+name)]
         return keywords
 
     def search_keyword(self, keyword, progress=None):
@@ -77,16 +78,16 @@ class KeywordManager:
     
     def _get_row_data(self, data):
         keyword, row = data
+        count = self.n_gram_count(keyword, row['content'], row['header'])
+        if count<=1:
+            return
         link = row['url']
         title = row['header']
         domain = urlparse(row['url']).netloc
+        # sentiment = random.choices(['positive', 'negative', 'neatral'], weights=((70,10,20)))[0]
         sentiment = self.sentiment.checksentimentword(" ".join([row['header'], row['content']]))
         lang = self.check_lang(title)
-        count = self.n_gram_count(keyword, row['content'], row['header'])
-        if count>0:
-            return [link, title, keyword, count, sentiment, lang, domain]
-        else:
-            return None
+        return [link, title, keyword, count, sentiment, lang, domain]
     
     def new_keyword_data(self, keyword, progress=None):
         data = pd.DataFrame(columns=self._columns)
@@ -113,6 +114,29 @@ class KeywordManager:
         else:
             return 'en'
     
+    def keywords_information(self):
+        keywords = self.get_all_keywords()
+        col = [
+            'keywords',
+            'Count',
+            'Positive',
+            'Negative',
+            'Neatral'
+        ]
+        data = pd.DataFrame(columns=col)
+        for keyword in keywords:
+            keyword_data = self.search_keyword(keyword)
+            count = keyword_data['Count'].sum()
+            sentiment = keyword_data['Sentiment'].value_counts()
+            positive = int(sentiment.get(['positive'], default=0))
+            negative = int(sentiment.get(['negative'], default=0))
+            neatral = int(sentiment.get(['neatral'], default=0))
+            data.loc[len(data)] = (keyword, count, positive, negative, neatral)
+        data.to_csv(self.directory+'/keywords.csv')
+        return data
+
+
+    
     def filter_domain(self, keyword, *domains):
         data = pd.DataFrame(columns=self._columns)
         path = f"{self.directory}/{keyword}"
@@ -132,6 +156,6 @@ if __name__ == "__main__":
     data = k.search_keyword('โรนัลโด้')
     data = k.search_keyword('เมสซี่')
     # print(k.get_all_keywords())
-    # data = k.get_domain('ar')
+    # data = k.keywords_information()
     print(data)
         

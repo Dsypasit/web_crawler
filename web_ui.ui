@@ -22,7 +22,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="mainTab">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="base_tab">
        <attribute name="title">
@@ -42,20 +42,6 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QTableWidget" name="base_table">
-          <property name="acceptDrops">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1" alignment="Qt::AlignRight">
-         <widget class="QLabel" name="status_base_label">
-          <property name="text">
-           <string>0 links</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="pushButton">
           <property name="text">
@@ -63,12 +49,39 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="1" column="0">
+         <widget class="QTableWidget" name="base_table">
+          <property name="acceptDrops">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QProgressBar" name="progressBar">
           <property name="value">
            <number>24</number>
           </property>
          </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="status_base_label">
+          <property name="text">
+           <string>0 links</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="keyword_tab">
+       <property name="accessibleDescription">
+        <string notr="true"/>
+       </property>
+       <attribute name="title">
+        <string>Page</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="QTableView" name="keywordView"/>
         </item>
        </layout>
       </widget>

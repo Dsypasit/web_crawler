@@ -10,13 +10,14 @@ import datetime
 import time
 from WordManager import WordManager
 from CrawlerManager import CrawlerManager
+from datetime import date
 
 class ScrapManager:
     def __init__(self):
         self.links = None
         self.file = "all_url.csv"
         self.worker = 1000
-        self.url_data = pd.DataFrame({'url':[], 'header':[], 'content':[]}, dtype='str')
+        self.url_data = pd.DataFrame({'date':[], 'url':[], 'header':[], 'content':[]}, dtype='str')
         self.date_format = "%d/%m/%Y"
         self.lang = ['th', 'en', 'all']
         self.selected_lang = 'all'
@@ -69,13 +70,13 @@ class ScrapManager:
     
     def get_all_data(self, links=[]):
         links = self.load_links(links)
-        self.url_data = pd.DataFrame({'url':[], 'header':[], 'content':[]}, dtype='str')
+        self.url_data = pd.DataFrame({'date':[], 'url':[], 'header':[], 'content':[]}, dtype='str')
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor:
             results = (executor.submit(self.get_data, url) for url in links)
             for result in as_completed(results):
                 re = result.result()
                 if re:
-                    self.url_data.loc[len(self.url_data.index)] = re
+                    self.url_data.loc[len(self.url_data.index)] = str(date.today()), *re
         self.url_data.drop(self.url_data[(self.url_data['header']=='') | (self.url_data['content']=='')].index, inplace=True)
         text_condition = lambda text: self.word_manager.clean_text(text) if self.is_eng(text.split()[0]) else self.word_manager.clean_text_th(text)
         self.url_data['header'] = self.url_data['header'].map(text_condition)

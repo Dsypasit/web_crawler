@@ -37,6 +37,8 @@ class MainWindow(QMainWindow):
         self.ui.base_table.setModel(self.model)
         self.ui.base_table.setColumnWidth(0, 200)
         self.ui.base_table.setColumnWidth(1, 200)
+        self.count_model = PandasTableModel(self.count_data)
+        self.ui.tableView.setModel(self.count_model)
     
     def searchKeyword(self, progress_callback=None):
         progress_callback.emit(0)
@@ -45,8 +47,10 @@ class MainWindow(QMainWindow):
             return
         self.keyword = keyword
         self.data = self.keyword_manager.search_keyword(self.keyword, progress_callback)
+        self.count_data = self.keyword_manager.get_counter_word(self.keyword)
         self.showTable()
         self.ui.base_label.setText(self.keyword)
+        self.ui.label.setText(self.keyword)
         progress_callback.emit(90)
         self.ui.status_base_label.setText(f"{len(self.data.index)} links")
         domains_list = self.keyword_manager.get_domain(self.keyword)
@@ -78,8 +82,10 @@ class MainWindow(QMainWindow):
         progress_callback.emit(0)
         self.keyword = item.text()
         self.data = self.keyword_manager.search_keyword(self.keyword, progress_callback)
+        self.count_data = self.keyword_manager.get_counter_word(self.keyword)
         self.showTable()
         self.ui.base_label.setText(self.keyword)
+        self.ui.label.setText(self.keyword)
         progress_callback.emit(90)
         self.ui.status_base_label.setText(f"{len(self.data.index)} links")
         domains_list = self.keyword_manager.get_domain(self.keyword)
@@ -102,6 +108,7 @@ class MainWindow(QMainWindow):
     def filterDomain(self):
         domains = [domain for domain in self.current_domains.keys() if self.current_domains[domain]]
         self.data = self.keyword_manager.filter_domain(self.keyword, *domains)
+        self.count_data = self.keyword_manager.get_counter_word(self.keyword)
         self.showTable()
 
     def keywordsTabale(self):

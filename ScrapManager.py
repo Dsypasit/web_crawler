@@ -25,7 +25,6 @@ class ScrapManager:
         self.keywords = ['chelsea', 'ronaldo', 'arsenal', 'liverpool']
         self.word_manager = WordManager()
         self.is_eng = lambda char: re.compile(r'[a-zA-Z]').match(char)
-        self.load_keywords_data()
 
     def read_cached(self):
         d = pd.read_csv(self.file, index_col=False, on_bad_lines='skip') # import file and ignore bad line
@@ -60,7 +59,6 @@ class ScrapManager:
     
     def save_data(self):
         self.url_data.to_csv('url_data.csv', index=False)
-        self.save_keywords_data()
     
     def load_links(self, links=[]):
         if len(links):

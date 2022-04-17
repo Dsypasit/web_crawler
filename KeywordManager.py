@@ -70,6 +70,11 @@ class KeywordManager:
             self.keyword_data = self.new_keyword_data(keyword, progress)
         return self.keyword_data
     
+    def get_counter_word(self, keyword):
+        self.count_data = pd.read_csv(self.directory+'/'+keyword+'/'+keyword+'_counter'+'.csv')
+        return self.count_data
+
+    
     def separated_domain(self, df, keyword):
         domains = df['Domain'].unique().tolist()
         for domain in domains:
@@ -110,7 +115,7 @@ class KeywordManager:
                     row_data, counter = row_data
                     data.loc[len(data)] = row_data
                     word_counter += counter
-        word_data = pd.DataFrame(word_counter.most_common(50))
+        word_data = pd.DataFrame(word_counter.most_common(50), columns=['Words', 'Count'])
         data = data.sort_values(by=['Count'], ascending=False)
         self.separated_domain(data, keyword)
         data.to_csv(f'{self.directory}/{keyword}/{keyword}.csv', index=False, encoding='utf-8')

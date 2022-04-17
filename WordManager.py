@@ -10,12 +10,14 @@ class WordManager:
     def counter(self, content):
         text = nltk.word_tokenize(content)
         freq = nltk.FreqDist(text)
-        return freq.most_common(10)
+        return freq
 
     def counter_th(self, content):
         text = word_tokenize(content)
         freq = rank(text)
-        return freq.most_common(10)
+        if ' ' in freq:
+            del freq[' ']
+        return freq
 
 
     def get_nouns(self, content):

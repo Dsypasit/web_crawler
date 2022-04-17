@@ -8,7 +8,9 @@ import langdetect
 import concurrent.futures
 from concurrent.futures import as_completed
 import time
+from WordManager import WordManager
 import random
+from collections import Counter
 
 class KeywordManager:
 
@@ -22,7 +24,8 @@ class KeywordManager:
             'Count', 
             'Sentiment',
             'Language',
-            'Domain']
+            'Domain',
+            'Date']
         self.data = pd.DataFrame(columns=self._columns)
         self.csv_options =  {}
         self.sentiment = Sentiment()
@@ -87,12 +90,15 @@ class KeywordManager:
         # sentiment = random.choices(['positive', 'negative', 'neatral'], weights=((70,10,20)))[0]
         sentiment = self.sentiment.checksentimentword(" ".join([row['header'], row['content']]))
         lang = self.check_lang(title)
-        return [link, title, keyword, count, sentiment, lang, domain]
+        date = row['date']
+        counter = self.count_word(row['content'], lang)
+        return [link, title, keyword, count, sentiment, lang, domain, date], counter
     
     def new_keyword_data(self, keyword, progress=None):
         data = pd.DataFrame(columns=self._columns)
         self.check_folder(f'{self.directory}/{keyword}')
         count = 0
+        word_counter = Counter()
         with concurrent.futures.ThreadPoolExecutor(1000) as exercutor:
             results = (exercutor.submit(self._get_row_data, (keyword, row)) for index, row in self.data_raw.iterrows())
             for result in as_completed(results):
@@ -101,10 +107,14 @@ class KeywordManager:
                     progress.emit(count/len(self.data_raw)*80)
                     count += 1
                 if row_data != None:
+                    row_data, counter = row_data
                     data.loc[len(data)] = row_data
+                    word_counter += counter
+        word_data = pd.DataFrame(word_counter.most_common(50))
         data = data.sort_values(by=['Count'], ascending=False)
         self.separated_domain(data, keyword)
         data.to_csv(f'{self.directory}/{keyword}/{keyword}.csv', index=False, encoding='utf-8')
+        word_data.to_csv(f'{self.directory}/{keyword}/{keyword}_counter.csv', index=False, encoding='utf-8')
         return data
     
     def check_lang(self, text):
@@ -135,6 +145,12 @@ class KeywordManager:
         data.to_csv(self.directory+'/keywords.csv')
         return data
 
+    def count_word(self, content, lang):
+        word_manager = WordManager()
+        if lang == 'th':
+            return word_manager.counter_th(content)
+        else:
+            return word_manager.counter(content)
 
     
     def filter_domain(self, keyword, *domains):
@@ -146,15 +162,18 @@ class KeywordManager:
         data = data.sort_values(by=['Count'], ascending=False)
         return data
 
+from time import time
 
 if __name__ == "__main__":
     k = KeywordManager()
+    start = time()
     data = k.search_keyword('chelsea')
     data = k.search_keyword('arsenal')
     data = k.search_keyword('liverpool')
     data = k.search_keyword('แมนยู')
     data = k.search_keyword('โรนัลโด้')
     data = k.search_keyword('เมสซี่')
+    print(time()-start)
     # print(k.get_all_keywords())
     # data = k.keywords_information()
     print(data)

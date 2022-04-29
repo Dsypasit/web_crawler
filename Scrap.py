@@ -2,6 +2,7 @@ from ast import expr_context
 import requests
 from bs4 import BeautifulSoup
 from Crawler import *
+from urllib.parse import urlparse
 
 class Scrap:
     def __init__(self, url):
@@ -17,7 +18,15 @@ class Scrap:
         bs = BeautifulSoup(res.text, 'html.parser')
         head = self.head_scrapping(bs)
         content = self.content_scrapping(bs)
-        return (self.url, head, content)
+        ref = self.ref_scrapping(bs)
+        domains = urlparse(self.url).netloc
+        return (ref, domains, self.url, head, content)
+    
+    def ref_scrapping(self, bs):
+        links = bs.find_all('a', href=True)
+        all_domains = [urlparse(a['href']).netloc for a in links if len(a['href']) and a['href'][0] not in  ['/', '#']]
+        domains = set(all_domains)
+        return len(domains)
 
     def head_scrapping(self, bs):
         try:
@@ -165,5 +174,6 @@ if __name__ == "__main__":
     # crawler = GoalCrawler()
     # link = crawler.get_all_links()
     sc = SportBibleScrap('https://www.sportbible.com/football/marcandre-ter-stegen-didnt-pick-lionel-messi-in-his-dream-xi-20220320')
-    print(sc.scrapping())
+    print(len(sc.scrapping()))
+    # print(sc.scrapping())
     print("-"*30)

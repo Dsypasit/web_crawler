@@ -19,9 +19,9 @@ class KeywordManager:
         self.filename = 'url_data.csv'
         self._columns=[
             'Link',
-            'Title',
             'Keyword', 
-            'Count', 
+            'Count',
+            'Ref', 
             'Sentiment',
             'Language',
             'Domain',
@@ -38,7 +38,14 @@ class KeywordManager:
         os.makedirs(folder, exist_ok=True)
     
     def load_data(self):
-        self.data_raw = pd.read_csv(self.filename)
+        self.data_raw = pd.DataFrame(columns=['date', 'ref', 'domains', 'url', 'header', 'content'])
+        data_path = f"data/"
+        date_folder = [name for name in os.listdir(data_path) if os.path.isdir(data_path+name)]
+        for d in date_folder:
+            df = pd.read_csv(f"{data_path}/{d}/url_data.csv")
+            self.data_raw = pd.concat([self.data_raw, df])
+        self.data_raw.drop_duplicates(subset=['url', 'domains'])
+        self.data_raw.dropna(inplace=True)
         return self.data_raw
 
     def n_gram_count(self, word, *contents):
@@ -86,18 +93,17 @@ class KeywordManager:
     
     def _get_row_data(self, data):
         keyword, row = data
-        count = self.n_gram_count(keyword, row['content'], row['header'])
+        count = self.n_gram_count(keyword, row['content'])
         if count<=1:
             return
         link = row['url']
-        title = row['header']
         domain = urlparse(row['url']).netloc
-        # sentiment = random.choices(['positive', 'negative', 'neatral'], weights=((70,10,20)))[0]
         sentiment = self.sentiment.checksentimentword(" ".join([row['header'], row['content']]))
-        lang = self.check_lang(title)
+        lang = self.check_lang(row['header'])
         date = row['date']
+        ref = row['ref']
         counter = self.count_word(row['content'], lang)
-        return [link, title, keyword, count, sentiment, lang, domain, date], counter
+        return [link, keyword, count, ref, sentiment, lang, domain, date], counter
     
     def new_keyword_data(self, keyword, progress=None):
         data = pd.DataFrame(columns=self._columns)
@@ -116,7 +122,7 @@ class KeywordManager:
                     data.loc[len(data)] = row_data
                     word_counter += counter
         word_data = pd.DataFrame(word_counter.most_common(50), columns=['Words', 'Count'])
-        data = data.sort_values(by=['Count'], ascending=False)
+        data = data.sort_values(by=['Count', 'Ref'], ascending=False)
         self.separated_domain(data, keyword)
         data.to_csv(f'{self.directory}/{keyword}/{keyword}.csv', index=False, encoding='utf-8')
         word_data.to_csv(f'{self.directory}/{keyword}/{keyword}_counter.csv', index=False, encoding='utf-8')
@@ -164,7 +170,7 @@ class KeywordManager:
         for d in domains:
             df = pd.read_csv(f"{path}/{d}/{keyword}.csv")
             data = pd.concat([data, df])
-        data = data.sort_values(by=['Count'], ascending=False)
+        data = data.sort_values(by=['Count', 'Ref'], ascending=False)
         return data
 
 from time import time
@@ -172,6 +178,7 @@ from time import time
 if __name__ == "__main__":
     k = KeywordManager()
     start = time()
+    # data = k.data_raw
     data = k.search_keyword('chelsea')
     data = k.search_keyword('arsenal')
     data = k.search_keyword('liverpool')

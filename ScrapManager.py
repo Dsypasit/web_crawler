@@ -1,3 +1,4 @@
+import os
 from pyparsing import Word
 from Crawler import ExpressCrawler, Football365Crawler, GiveMeSportCrawler, IndianCrawler, KapookCrawler, KhaosodCrawler, NineZeroCrawler, SMMCrawler, SiamSportCrawler, SportBibleCrawler, SportMoleCrawler, SportingLifeCrawler, TPBSCrawler, TeamTalkCrawler, ThairathCrawler
 from Scrap import ExpressScrap, Football365Scrap, GivemeScrap, GoalCrawler, GoalScrap, IndianScrap, KapookScrap, KhaosodScrap, NineZeroScrap, SiamScrap, SkyScrap, BBCScrap, CNNScrap, SmmScrap, SportBibleScrap, SportMoleScrap, SportingLifeScrap, TPBSScrap, TeamTalkScrap, ThairathScrap
@@ -17,12 +18,9 @@ class ScrapManager:
         self.links = None
         self.file = "all_url.csv"
         self.worker = 1000
-        self.url_data = pd.DataFrame({'date':[], 'url':[], 'header':[], 'content':[]}, dtype='str')
         self.date_format = "%d/%m/%Y"
         self.lang = ['th', 'en', 'all']
         self.selected_lang = 'all'
-        self.keywords_data = pd.DataFrame({'keywords':pd.Series(dtype='str'), 'count':pd.Series(dtype='int'), 'date':pd.Series(dtype='str'), 'lang':pd.Series(dtype='str')})
-        self.keywords = ['chelsea', 'ronaldo', 'arsenal', 'liverpool']
         self.word_manager = WordManager()
         self.is_eng = lambda char: re.compile(r'[a-zA-Z]').match(char)
 
@@ -31,34 +29,22 @@ class ScrapManager:
         d = d.drop_duplicates(subset=['url'])   # drop duplicate
         return d['url'].values
     
-    def load_keywords_data(self):
-        try:
-            self.keywords_data = pd.read_csv('keywords_data.csv', index_col=False)
-            self.keywords = self.keywords_data['keywords'].unique().tolist()
-        except pd.errors.EmptyDataError:
-            self.keywords_data = pd.DataFrame({'keywords':pd.Series(dtype='str'), 'count':pd.Series(dtype='int'), 'date':pd.Series(dtype='str'), 'lang':pd.Series(dtype='str')})
-            self.keywords = ['chelsea', 'ronaldo', 'arsenal', 'liverpool']
-    
-    def append_keywords(self, word):
-        self.keywords.append(word)
-        self.keywords = list(set(self.keywords))
-    
-    def _merge_new_keywords_data(self, new_data):
-            data = pd.concat([self.keywords_data, new_data]).drop_duplicates(['keywords', 'date'], keep='last')
-            data.sort_values(by="date", key=lambda i:pd.to_datetime(i, format=self.date_format), inplace=True)
-            return data
-                
-    def save_keywords_data(self):
-        try:
-            old_keyword = pd.read_csv('keywords_data.csv')
-            data = pd.concat([old_keyword, self.keywords_data]).drop_duplicates(['keywords', 'date'], keep='last')
-            data.sort_values(by="date", key=lambda i:pd.to_datetime(i, format=self.date_format), inplace=True)
-            data.to_csv('keywords_data.csv', index=False)
-        except pd.errors.EmptyDataError:
-            self.keywords_data.to_csv('keywords_data.csv', index=False)
+    def check_folder(self, folder):
+        os.makedirs(folder, exist_ok=True)
     
     def save_data(self):
-        self.url_data.to_csv('url_data.csv', index=False)
+        path = 'data/'+str(date.today())+'/'
+        self.check_folder('data')
+        self.check_folder(path)
+        df = self.url_data
+        domains = df['domains'].unique().tolist()
+        for domain in domains:
+            data = df[df['domains'] == domain]
+            filepath = path+'/'+domain+'/'
+            self.check_folder(filepath)
+            filename = filepath + 'data' + '.csv'
+            data.to_csv(filename, index=False, encoding='utf-8')
+        self.url_data.to_csv(path+'url_data.csv', index=False)
     
     def load_links(self, links=[]):
         if len(links):
@@ -68,7 +54,7 @@ class ScrapManager:
     
     def get_all_data(self, links=[]):
         links = self.load_links(links)
-        self.url_data = pd.DataFrame({'date':[], 'url':[], 'header':[], 'content':[]}, dtype='str')
+        self.url_data = pd.DataFrame({'date':[], 'ref':[], 'domains':[], 'url':[], 'header':[], 'content':[]}, dtype='str')
         with concurrent.futures.ThreadPoolExecutor(self.worker) as executor:
             results = (executor.submit(self.get_data, url) for url in links)
             for result in as_completed(results):
@@ -134,52 +120,12 @@ class ScrapManager:
     def url_domain(self, url):
         url_parse = urlparse(url)
         return url_parse.scheme + "://" + url_parse.netloc
-    
-    def get_keywords_data(self):
-        if len(self.url_data) == 0:
-            self.get_all_data()
-        keywords_data = pd.DataFrame({'keywords':pd.Series(dtype='str'), 'count':pd.Series(dtype='int'), 'date':pd.Series(dtype='str'), 'lang':pd.Series(dtype='str')})
-        with concurrent.futures.ThreadPoolExecutor(self.worker) as executor :
-            results = ( executor.submit(self.keywords_processing, i) for i in self.keywords)
-            for result in as_completed(results):
-                result_data = result.result()
-                keywords_data.loc[len(keywords_data.index)] = result_data
-        self.keywords_data = self._merge_new_keywords_data(keywords_data)
-        return self.keywords_data.copy()
-    
-    def keywords_processing(self, word):
-        count = 0
-        with concurrent.futures.ThreadPoolExecutor(self.worker) as executor:
-            results = (executor.submit(lambda contents: self.n_gram_count(word, *contents), contents) for contents in self.url_data.loc[:, ['header', 'content']].values)
-            for result in as_completed(results):
-                count += result.result()
-        date = datetime.datetime.today().strftime(self.date_format)
-        # date = datetime.datetime.today() + datetime.timedelta(days=1)
-        # date = date.strftime(self.date_format)
-        lang = 'en' if self.is_eng(word) else 'th'
-        return word, count, date, lang
-
-    def n_gram_count(self, word, *contents):
-        content = " ".join(contents)
-        content = content.lower()
-        reg = re.compile(r'[a-zA-Z]')
-        word = word.lower()
-        if reg.match(word):
-            return content.count(word)
-        else:
-            return len(re.findall(word, content))
 
 if __name__ == "__main__":
-    # craw = CrawlerManager()
-    # craw.get_all_links()
+    craw = CrawlerManager()
+    craw.get_all_links()
     manager = ScrapManager()
     start = time.time()
     data = manager.get_all_data()
-    print(data[:20])
     print(time.time() - start)
-    # keyword_data = manager.get_keywords_data()
-    # print(keyword_data)
-    # manager.append_keywords('Manchester United')
-    # keywords_data2 = manager.get_keywords_data()
-    # print(keywords_data2)
     manager.save_data()

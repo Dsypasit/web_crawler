@@ -10,7 +10,7 @@ class WordManager:
     def counter(self, content):
         text = nltk.word_tokenize(content)
         freq = nltk.FreqDist(text)
-        fil = ["'s", "'", "n't", 'He']
+        fil = ["'s", "'", "n't", 'He', 'The', 'could', 'would', 'also', 'It', 'the', 'A', 'one', 'I']
         for i in fil:
             if i in freq:
                 del freq[i]
@@ -19,7 +19,8 @@ class WordManager:
     def counter_th(self, content):
         text = word_tokenize(content)
         freq = rank(text)
-        fil = [' ', 'ที่', "'"]
+        fil = [' ', 'ที่', "'", '์', 'แต่', 'ก็', 'ด้วย', 'นี้', 'แล้ว', 'ต่อ', 'ว่า', 'จาก', 'และ', 'ได้', 
+        'อย่าง', 'เลย', 'การ', 'กับ']
         for i in fil:
             if i in freq:
                 del freq[i]

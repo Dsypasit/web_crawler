@@ -153,7 +153,7 @@ class KeywordManager:
             negative = int(sentiment.get(['negative'], default=0))
             neatral = int(sentiment.get(['neatral'], default=0))
             data.loc[len(data)] = (keyword, count, positive, negative, neatral)
-        data.to_csv(self.directory+'/keywords.csv')
+        data.to_csv(self.directory+'/keywords.csv', index=False)
         return data
 
     def count_word(self, content, lang):

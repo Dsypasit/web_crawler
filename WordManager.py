@@ -94,15 +94,14 @@ class WordManager:
 
 if __name__ == '__main__':
     w = WordManager()
-    # text = "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก"
-    # text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
-    # text =  "Hi. My name is John. How are you? John is my best friend."
-    # text = w.clean_text(text)
-    # # n = w.get_nouns_th(text)
-    # print(w.counter(text))
+    text =  "Hi. My name is John. How are you? John is my best friend."
+    print("Eng")
+    print('before: '+text)
+    text = w.clean_text(text)
+    print('after: '+text)
 
-    # text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
-    # text = w.clean_text_th(text)
-    # w.get_nouns_th(text)
-    print(stopwords.words('english'))
-    print(thai_stopwords())
+    print("Th")
+    text =  "ทดสอบระบบครับ พสิษฐ์ทำจะแบบนี้ทำไมครับ โรนัลโด้เก่งมาก โรนัลโด้สุดยอด"
+    print('before: '+text)
+    text = w.clean_text_th(text)
+    print('after: '+text)

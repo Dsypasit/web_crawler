@@ -77,10 +77,6 @@ class Crawler:
         fil_links = list(filter(self.regex.match, self._before_filter_links))
         return fil_links.copy()
 
-    def n_gram_count(self, content):
-        """ Count word in content"""
-        return content.count(self.word)
-
     def get_url_links(self, content):
         if not content: return []
         url_reg2 = re.compile(r"href='(.*?)'")  # select string in href
@@ -136,16 +132,6 @@ class Crawler:
         print(url, "success", time.time()-start)
         return self.links['url'].values
 
-    def add_n_gram(self, url):
-        con = self.get_url_content(url)
-        if con == None:
-            return (url, 0)
-        n = self.n_gram_count(con)
-        return (url, n)
-
-    def set_word(self, word):
-        self.word = word
-    
     def check_url(self, url):
         url_parse = urlparse(url)
         return all([url_parse.scheme, url_parse.netloc])
@@ -156,18 +142,14 @@ class Crawler:
         driver = webdriver.Chrome(path+"chromedriver.exe")
         driver.get(url)
         SCROLL_PAUSE_TIME = 0.5
-
         # Get scroll height
         last_height = driver.execute_script("return document.body.scrollHeight")
         c = 0
-
         while c<6:
             # Scroll down to bottom
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
             # Wait to load page
             time.sleep(SCROLL_PAUSE_TIME)
-
             # Calculate new scroll height and compare with last scroll height
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
@@ -406,8 +388,13 @@ if __name__ == "__main__":
         print(time.time()-start)
         return result
     pd.options.display.max_colwidth = 600
-    crawler = CbssCrawler()
+    # crawler = DailyRecordCrawler()
     # crawler = CollegeCrawler()
+    crawler = CbssCrawler()
     data = time_spent(crawler.get_all_links)
     print(data[:21])
     print(len(data))
+    # for i in data[:21]:
+    #     s = SportingLifeScrap(i)
+    #     a = s.scrapping()
+    #     print(a)

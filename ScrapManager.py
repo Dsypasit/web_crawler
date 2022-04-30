@@ -1,7 +1,7 @@
 import os
 from pyparsing import Word
 from Crawler import ExpressCrawler, Football365Crawler, GiveMeSportCrawler, IndianCrawler, KapookCrawler, KhaosodCrawler, NineZeroCrawler, SMMCrawler, SiamSportCrawler, SportBibleCrawler, SportMoleCrawler, SportingLifeCrawler, TPBSCrawler, TeamTalkCrawler, ThairathCrawler
-from Scrap import ExpressScrap, Football365Scrap, GivemeScrap, GoalCrawler, GoalScrap, IndianScrap, KapookScrap, KhaosodScrap, NineZeroScrap, SiamScrap, SkyScrap, BBCScrap, CNNScrap, SmmScrap, SportBibleScrap, SportMoleScrap, SportingLifeScrap, TPBSScrap, TeamTalkScrap, ThairathScrap
+from Scrap import ExpressScrap, Football365Scrap, GivemeScrap, GoalScrap, IndianScrap, KapookScrap, KhaosodScrap, NineZeroScrap, SiamScrap, SkyScrap, BBCScrap, CNNScrap, SmmScrap, SportBibleScrap, SportMoleScrap, SportingLifeScrap, TPBSScrap, TeamTalkScrap, ThairathScrap
 from urllib.parse import urlparse
 import pandas as pd
 import concurrent.futures

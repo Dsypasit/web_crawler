@@ -23,176 +23,93 @@ class Crawler{
     -click_button(url)
 }
 
-class GoalCrawler{
-    +String url
-    +bool no_domain
-    -filter_links(links=[])
-}
-
-class SkySportCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-
-Crawler <|-- GoalCrawler
-Crawler <|-- SkySportCrawler
-Crawler <|-- CNNCrawler
-
-class CNNCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-
 Crawler <|-- BBCCrawler
+Crawler <|-- NineZeroCrawler
+Crawler <|-- CNNCrawler
 
 class BBCCrawler{
     +String url
-    +Re.Patter regex
-    +bool no_domain
+    +Re.Pattern regex
 }
-
-Crawler <|-- SiamSportCrawler
-
-class SiamSportCrawler{
+class CNNCrawler{
     +String url
-    +Re.Patter regex
-    +bool no_domain
+    +Re.Pattern regex
 }
-
-Crawler <|-- SoccerSuckCrawler
-
-class SoccerSuckCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-
-Crawler <|-- DailyMailCrawler
-class DailyMailCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-
-Crawler <|-- NineZeroCrawler
 class NineZeroCrawler{
     +String url
-    +Re.Patter regex
-    +bool no_domain
+    +Re.Pattern regex
 }
 
-Crawler <|-- TeamTalkCrawler
-class TeamTalkCrawler{
+class Scrap{
     +String url
-    +Re.Patter regex
-    +bool no_domain
+    +List head
+    +List content
+    +scrapping()
+    -ref_scrapping(BeautifulSoup bs)
+    -head_scrapping(BeautifulSoup bs)
+    -content_scrapping(BeautifulSoup bs)
 }
 
-Crawler <|-- ExpressCrawler
-class ExpressCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- Football365Crawler
-class Football365Crawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- GiveMeSportCrawler
-class GiveMeSportCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- ThairathCrawler
-class ThairathCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- SMMCrawler
-class SMMCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- KapookCrawler
-class KapookCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- SportMoleCrawler
-class SportMoleCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- DailyRecordCrawler
-class DailyRecordCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- IndianCrawler
-class IndianCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- KhaosodCrawler
-class KhaosodCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- TPBSCrawler
-class TPBSCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- SportBibleCrawler
-class SportBibleCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- EspnCrawler
-class EspnCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- NdtvCrawler
-class NdtvCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-}
-Crawler <|-- CbssCrawler
-class CbssCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-    +List id_click
-    +bool is_clicked
-}
-Crawler <|-- CollegeCrawler
-class CollegeCrawler{
-    +String url
-    +Re.Patter regex
-    +bool no_domain
-    +bool is_scroll
-}
-CrawlerManager -->Crawler
-Scrap <|-- GoalScrap
-Scrap <|-- SkySportScrap
-Scrap <|-- CNNScrap
+Scrap <|-- NineZeroScrap
 Scrap <|-- BBCScrap
-ScrapManager-->Scrap
+Scrap <|-- CNNScrap
+
+class BBCScrap{
+    +List head
+    +List content
+}
+class CNNScrap{
+    +List head
+    +List content
+}
+class NineZeroScrap{
+    +String url
+    +Re.Pattern regex
+}
+
+
+ScrapManager "1"-- "*" Scrap
+class ScrapManager{
+    -String file
+    -int worker
+    -String date_format
+    -WordManager word_manager
+    +save_data()
+    +get_all_data()
+    +get_data(url)
+    -read_cached()
+    -check_folder(folder)
+    -load_links()
+    -url_domain(url)
+}
+CrawlerManager "1" -- "*" Crawler
+class CrawlerManager{
+    +List all_links
+    +pd.core.DataFrame data
+    -int worker
+    -List links
+    -String file
+    +save_links()
+    +get_all_links()
+    +get_n_gram_data()
+    -get_url_content(link)
+    -create_crawler(url)
+    -get_links()
+    -count_url_ngram()
+    -read_cached()
+}
+
+ScrapManager o-- WordManager
+
+class WordManager{
+    +counter(content)
+    +counter_th(content)
+    +clean_text(text)
+    +clean_text_th(text)
+    +get_nouns(text)
+    +get_nouns_th(text)
+    +remove_url(text)
+    +remove_url_th(text)
+}
+
 ```

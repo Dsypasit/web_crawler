@@ -99,7 +99,7 @@ class CrawlerManager{
     -read_cached()
 }
 
-ScrapManager o-- WordManager
+ScrapManager *-- WordManager
 
 class WordManager{
     +counter(content)
@@ -112,4 +112,32 @@ class WordManager{
     +remove_url_th(text)
 }
 
+class KeywordManager{
+    +Sentiment sentiment
+    +String filename
+    +String web_keywords
+    +pd.cor.DataFrame
+    +get_domain()
+    +get_all_keyword()
+    +search_keywords()
+    +get_counter_word()
+    +filter_domain
+    -check_folder()
+    -load_data()
+    -n_gram_count()
+    -separated_domain()
+    -_get_row_data()
+    -new_keyword_data()
+    -check_lang()
+    -keywords_information()
+    -count_word()
+}
+
+class Sentiment{
+    +checksentimentword()
+    +sentiment_th()
+    +sentiment_eng()
+}
+
+KeywordManager "1" *-- "1" Sentiment
 ```
